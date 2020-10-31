@@ -156,11 +156,11 @@ void stopMotor(void) {
   iHallTurnRunStep = -1;
 }
 void startMotor(void) {
-  analogWrite(PORT_PWM, 255);
+  analogWrite(PORT_PWM, 64);
   iConstCurrentSpeed = 32;
   digitalWrite(PORT_BRAKE,HIGH);
   iHallTurnRunStep = 16;
-  DUMP_VAR(iHallTurnRunStep);
+  //DUMP_VAR(iHallTurnRunStep);
 }
 void loopMotor(void) {
 }
