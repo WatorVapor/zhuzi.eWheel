@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+  </head>
+   <body>
+    <div class="container-fluid mt-2">
+      <h3>Web Serial API設定する</h3>
+      <h5 class="badge badge-warning">chrome://flags/#enable-experimental-web-platform-features</h5>
+    </div>
+    <div class="container-fluid">
+      <div class="row mt-2">
+        <div class="col d-flex justify-content-start">
+          <input type="button" class="btn btn-primary" onClick="onClickOpenDevice(this)" value="Open eLeg"></input>
+        </div>
+      </div>
+
+      <div class="row mt-3">
+        <div class="col-2 justify-content-center">
+          <input type="button" class="btn btn-info" onClick="onClickCalibratePosition(this)" value="Calibrate Position"></input>
+        </div>
+        <div class="col-8 justify-content-center">
+          <form>
+            <div class="form-group">
+              <label for="formControlRange">Position Test:
+              <span class="badge badge-secondary" id="eleg-position-value-label">50</span>
+              <span class="badge badge-danger" id="eleg-position-value-target-label">50</span>
+              </label>
+              <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                  <span class="input-group-text" id="eleg-position-min">0</span>
+                </div>
+                <input type="range" class="form-control" min="0" max="100" value="50" step="1" id="eleg-position-value-range" onChange="onChangePosition(this)">
+                <div class="input-group-append">
+                  <span class="input-group-text" id="eleg-position-max">100</span>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="row mt-3">
+        <div class="col-2 justify-content-center">
+          <input type="button" class="btn btn-info" onClick="onClickTurnZ(this)" value="CW + "></input>
+        </div>
+        <div class="col-2 justify-content-center">
+          <input type="button" class="btn btn-info" onClick="onClickTurnF(this)" value="CCW - "></input>
+        </div>
+        <div class="col-2 justify-content-center">
+          <input type="button" class="btn btn-info" onClick="onClickTurnG(this)" value="Turn"></input>
+        </div>
+      </div>
+
+
+    </div>
+    
+    <hr/>
+    
+    <div class="container-fluid">
+      <div class="row mt-1">
+        <div class="col-12 d-flex justify-content-center">
+          <pre class="w-100 border border-primary bg-dark text-white" id="serail-output" style="height: 200px;">
+          </pre>
+        </div>
+      </div>
+    </div>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsrsasign/8.0.12/jsrsasign-all-min.js" integrity="sha256-EI1piDYqyKFAy+ykWQZRjH5kkw9eIYE/IahQWg1rXt0=" crossorigin="anonymous"></script>
+    <script src="./eleg.js"></script>
+  </body>
+</html>
+
