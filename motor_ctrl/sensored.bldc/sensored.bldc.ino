@@ -68,14 +68,13 @@ static int16_t volatile iTargetPositionByHall= -1;
 void caclTargetSpeed(void);
 
 void loop() {
-  caclTargetSpeed();
- //printTurnCounter();
+  loopMotor();
   handleIncommingCommand();
 }
 
 void HallTurnCounterInterrupt(void) {
   iHallTurnCounter++;
-  //DUMP_VAR(iHallTurnCounter);
+  DUMP_VAR(iHallTurnCounter);
   if(iHallTurnRunStep > 0) {
     iHallTurnRunStep--;
   } else {
@@ -129,16 +128,11 @@ static String gHandleStringCommand;
 void runLongCommand(char ch) {
   gHandleStringCommand += ch;
   if(ch == '\n') {
-    DUMP_VAR(gHandleStringCommand);
-    if(gHandleStringCommand.startsWith("calibrate")) {
-      runCalibrate();
-    }
-    if(gHandleStringCommand.startsWith("pos:")) {
-      auto posValue = gHandleStringCommand.substring(4, gHandleStringCommand.length());
-      posValue.trim();
-      DUMP_VAR(posValue);
-      auto pos = posValue.toInt();
-      runToPosion(pos);
+    if(gHandleStringCommand.startsWith("spd:")) {
+      auto speedValue = gHandleStringCommand.substring(4, gHandleStringCommand.length());
+      speedValue.trim();
+      DUMP_VAR(speedValue);
+      auto spd = speedValue.toInt();
     }
     gHandleStringCommand = "";
   }
@@ -151,67 +145,10 @@ void runCalibrate(void) {
   startMotor();
 }
 
-//const static uint8_t iConstMaxSpeed = 255;
 const static uint8_t iConstMaxSpeed = 64;
 const static uint8_t iConstMinSpeed = 12;
 const static uint8_t iConstBrakeDistance = 32;
 
-void runToPosion(int16_t position) {
-  if(position >= iPositionByHallRangeHigh ||position <= iPositionByHallRangeLow) {
-    return;
-  }
-  iTargetPositionByHall = position;
-  //DUMP_VAR(position);
-  int16_t currentPos = iPositionByHall;
-  //DUMP_VAR(currentPos);
-  int16_t diff = position - currentPos;
-  //DUMP_VAR(diff);
-  iHallTurnRunStep = abs(diff);
-  //DUMP_VAR(iHallTurnRunStep);
-  if(iHallTurnRunStep > 0) {
-    if(diff > 0) {
-      CW();
-    } else {
-      CCW();
-    }
-    uint32_t speed1 = iConstMaxSpeed;
-    uint32_t speed2 = iHallTurnRunStep;
-    uint32_t speed3 = iPositionByHallRangeDistance;
-    uint32_t speed32 = iConstMaxSpeed * iHallTurnRunStep/iConstBrakeDistance;
-    if(speed32 > iConstMaxSpeed) {
-      speed32 = iConstMaxSpeed;
-    }
-    if(speed32 < iConstMinSpeed) {
-      speed32 = iConstMinSpeed;
-    }
-    uint8_t speed8 = speed32 & 0xff;
-    /*
-    if(speed8 < iConstMinSpeed) {
-      speed8 = iConstMinSpeed;
-    }
-    */
-    iConstCurrentSpeed = speed8;
-    analogWrite(PORT_PWM, speed8);
-    digitalWrite(PORT_BRAKE,HIGH);
-  }
-}
-const static int8_t iConstTargetNear = 1;
-
-static int8_t iTargetNearCounter = 0;
-void caclTargetSpeed(void) {
-  if(iTargetPositionByHall == -1) {
-    return;
-  }
-  int8_t diff = abs(iTargetPositionByHall - iPositionByHall);
-  if(diff <= iConstTargetNear ) {
-    if(iTargetNearCounter++ > 1) {
-      iTargetPositionByHall = -1;
-    }
-    return;
-  }
-  iTargetNearCounter = 0;
-  runToPosion(iTargetPositionByHall);
-}
 
 void stopMotor(void) {
   analogWrite(PORT_PWM, 0);
@@ -219,8 +156,11 @@ void stopMotor(void) {
   iHallTurnRunStep = -1;
 }
 void startMotor(void) {
-  analogWrite(PORT_PWM, 32);
+  analogWrite(PORT_PWM, 255);
   iConstCurrentSpeed = 32;
   digitalWrite(PORT_BRAKE,HIGH);
-  iHallTurnRunStep = 6;
+  iHallTurnRunStep = 16;
+  DUMP_VAR(iHallTurnRunStep);
+}
+void loopMotor(void) {
 }

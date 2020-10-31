@@ -9,7 +9,7 @@ const serialOption = {
   buffersize:128
 };
 
-let gElegWriter = false;
+let gZhuziWriter = false;
 const onClickOpenDevice = async (evt) => {
   try {
     const device = await navigator.serial.requestPort({filter: filter});
@@ -19,8 +19,8 @@ const onClickOpenDevice = async (evt) => {
     const reader = device.readable.getReader();
     console.log('onClickOpenDevice::reader=<',reader,'>');
 
-    gElegWriter = device.writable.getWriter();
-    console.log('onClickOpenDevice::gElegWriter=<',gElegWriter,'>');
+    gZhuziWriter = device.writable.getWriter();
+    console.log('onClickOpenDevice::gZhuziWriter=<',gZhuziWriter,'>');
 
     setTimeout(()=> {
       readSerailData(reader);
@@ -50,7 +50,7 @@ const readSerailData = (reader)=> {
         //console.log('readSerailData::readOne lineCmd=<',lineCmd,'>');
         if(lineCmd) {
           readLineBuffer.push(lineCmd);
-          onELegInfoLine(lineCmd);
+          onZhuZiInfoLine(lineCmd);
         }
       }
       elemRead.textContent = readLineBuffer.reverse().join('\n');
@@ -71,26 +71,26 @@ const ElegPosLowStarter = 'iPositionByHallRangeLow=<';
 const ElegPosHighStarter = 'iPositionByHallRangeHigh=<';
 const ElegSpeedStarter = 'iConstCurrentSpeed=<';
 
-const onELegInfoLine = (lineCmd) => {
-  //console.log('onELegInfoLine::lineCmd=<',lineCmd,'>');
+const onZhuZiInfoLine = (lineCmd) => {
+  //console.log('onZhuZiInfoLine::lineCmd=<',lineCmd,'>');
   if( lineCmd.indexOf(ElegPosCounterStarter) >= 0) {
     const currentPos = getValueOfLineCmd(lineCmd);
-    //console.log('onELegInfoLine::currentPos=<',currentPos,'>');
+    //console.log('onZhuZiInfoLine::currentPos=<',currentPos,'>');
     updateRangevalue(currentPos);
   }
   if(lineCmd.indexOf(ElegPosLowStarter) >= 0) {
     const lowPos = getValueOfLineCmd(lineCmd);
-    console.log('onELegInfoLine::lowPos=<',lowPos,'>');
+    console.log('onZhuZiInfoLine::lowPos=<',lowPos,'>');
     changeLowOfPos(lowPos);
   }
   if(lineCmd.indexOf(ElegPosHighStarter) >= 0) {
     const hightPos = getValueOfLineCmd(lineCmd);
-    console.log('onELegInfoLine::hightPos=<',hightPos,'>');
+    console.log('onZhuZiInfoLine::hightPos=<',hightPos,'>');
     changeHighOfPos(hightPos);
   }
   if(lineCmd.indexOf(ElegSpeedStarter) >= 0) {
     const speed = getValueOfLineCmd(lineCmd);
-    console.log('onELegInfoLine::speed=<',speed,'>');
+    console.log('onZhuZiInfoLine::speed=<',speed,'>');
   }
 }
 
@@ -99,48 +99,21 @@ const getValueOfLineCmd =(lineCmd) => {
   const end = lineCmd.indexOf('>');
   if(start > -1 && end > -1) {
     const value = lineCmd.slice(start+2,end);
-    //console.log('onELegInfoLine::value=<',value,'>');
+    //console.log('onZhuZiInfoLine::value=<',value,'>');
     return parseInt(value);
   }
   return false;
 }
 
-const changeLowOfPos = (value) => {
-  const minElem = document.getElementById('eleg-position-min');
-  minElem.textContent = value;
-  const rangeElem = document.getElementById('eleg-position-value-range');
-  rangeElem.setAttribute('min',parseInt(value) + 1);
-}
 
-
-const changeHighOfPos = (value) => {
-  const maxElem = document.getElementById('eleg-position-max');
-  maxElem.textContent = value;
-  const rangeElem = document.getElementById('eleg-position-value-range');
-  rangeElem.setAttribute('max',parseInt(value) -1);
-}
-
-const onClickCalibratePosition = (evt) => {
-  try {
-  if(gElegWriter) {
-    const reqcalibrate = 'calibrate\n';
-    const wBuff = new TextEncoder().encode(reqcalibrate);
-    console.log('onClickCalibratePosition::wBuff=<',wBuff,'>');
-    gElegWriter.write(wBuff);
-  }
-  }
-  catch(e) {
-    console.log('onClickCalibratePosition::e=<',e,'>');
-  }
-}
 
 const onClickTurnZ = (evt) => {
   try {
-  if(gElegWriter) {
+  if(gZhuziWriter) {
     const reqcalibrate = 'z\n';
     const wBuff = new TextEncoder().encode(reqcalibrate);
     console.log('onClickTurnZ::wBuff=<',wBuff,'>');
-    gElegWriter.write(wBuff);
+    gZhuziWriter.write(wBuff);
   }
   }
   catch(e) {
@@ -150,11 +123,11 @@ const onClickTurnZ = (evt) => {
 
 const onClickTurnF = (evt) => {
   try {
-  if(gElegWriter) {
+  if(gZhuziWriter) {
     const reqcalibrate = 'f\n';
     const wBuff = new TextEncoder().encode(reqcalibrate);
     console.log('onClickTurnF::wBuff=<',wBuff,'>');
-    gElegWriter.write(wBuff);
+    gZhuziWriter.write(wBuff);
   }
   }
   catch(e) {
@@ -164,11 +137,11 @@ const onClickTurnF = (evt) => {
 
 const onClickTurnG = (evt) => {
   try {
-  if(gElegWriter) {
+  if(gZhuziWriter) {
     const reqcalibrate = 'g\n';
     const wBuff = new TextEncoder().encode(reqcalibrate);
     console.log('onClickTurnG::wBuff=<',wBuff,'>');
-    gElegWriter.write(wBuff);
+    gZhuziWriter.write(wBuff);
   }
   }
   catch(e) {
@@ -177,36 +150,3 @@ const onClickTurnG = (evt) => {
 }
 
 
-
-
-const onChangePosition = (elem) => {
-  try {
-    changeRangevalue(elem.value);
-    if(gElegWriter) {
-      //console.log('onClickChangePosition::elem.value=<',elem.value,'>');
-      const reqPosition = `pos:${elem.value}\n`;
-      const wBuff = new TextEncoder().encode(reqPosition);
-      //console.log('onClickChangePosition::wBuff=<',wBuff,'>');
-      gElegWriter.write(wBuff);
-    }
-  }
-  catch(e) {
-    console.log('onClickChangePosition::e=<',e,'>');
-  }
-}
-
-const changeRangevalue = (value) => {
-  const targetElem = document.getElementById('eleg-position-value-target-label');
-  targetElem.textContent = value;
-  updateRangevalue(value);
-}
-
-const updateRangevalue = (value) => {
-  //console.log('updateRangevalue::value=<',value,'>');
-  const labelElem = document.getElementById('eleg-position-value-label');
-  labelElem.textContent = value;
- 
- //console.log('updateRangevalue::value=<',value,'>');
-  const rangeElem = document.getElementById('eleg-position-value-range');
-  rangeElem.value = value;
-}

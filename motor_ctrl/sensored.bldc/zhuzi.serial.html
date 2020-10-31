@@ -12,32 +12,7 @@
     <div class="container-fluid">
       <div class="row mt-2">
         <div class="col d-flex justify-content-start">
-          <input type="button" class="btn btn-primary" onClick="onClickOpenDevice(this)" value="Open eLeg"></input>
-        </div>
-      </div>
-
-      <div class="row mt-3">
-        <div class="col-2 justify-content-center">
-          <input type="button" class="btn btn-info" onClick="onClickCalibratePosition(this)" value="Calibrate Position"></input>
-        </div>
-        <div class="col-8 justify-content-center">
-          <form>
-            <div class="form-group">
-              <label for="formControlRange">Position Test:
-              <span class="badge badge-secondary" id="eleg-position-value-label">50</span>
-              <span class="badge badge-danger" id="eleg-position-value-target-label">50</span>
-              </label>
-              <div class="input-group mb-3">
-                <div class="input-group-prepend">
-                  <span class="input-group-text" id="eleg-position-min">0</span>
-                </div>
-                <input type="range" class="form-control" min="0" max="100" value="50" step="1" id="eleg-position-value-range" onChange="onChangePosition(this)">
-                <div class="input-group-append">
-                  <span class="input-group-text" id="eleg-position-max">100</span>
-                </div>
-              </div>
-            </div>
-          </form>
+          <input type="button" class="btn btn-primary" onClick="onClickOpenDevice(this)" value="Open Zhuzi"></input>
         </div>
       </div>
 
@@ -69,7 +44,7 @@
 
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsrsasign/8.0.12/jsrsasign-all-min.js" integrity="sha256-EI1piDYqyKFAy+ykWQZRjH5kkw9eIYE/IahQWg1rXt0=" crossorigin="anonymous"></script>
-    <script src="./eleg.js"></script>
+    <script src="./zhuzi.js"></script>
   </body>
 </html>
 
