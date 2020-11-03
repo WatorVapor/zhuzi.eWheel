@@ -67,6 +67,7 @@ const readSerailData = (reader)=> {
 };
 
 const ZhuZiMotorId = 'motorid=<';
+const ZhuZiMotorDelay = 'startDelay=<';
 
 const onZhuZiInfoLine = (lineCmd) => {
   //console.log('onZhuZiInfoLine::lineCmd=<',lineCmd,'>');
@@ -77,7 +78,13 @@ const onZhuZiInfoLine = (lineCmd) => {
     console.log('onZhuZiInfoLine::motoridStr=<',motoridStr,'>');
     onMotorIdFromBoard(motoridStr);
   }
-
+  if(lineCmd.indexOf(ZhuZiMotorDelay) >= 0) {
+    const startDelayStr = getValueOfLineCmd(lineCmd);
+    console.log('onZhuZiInfoLine::startDelayStr=<',startDelayStr,'>');
+    const startDelay = parseInt(startDelayStr);
+    console.log('onZhuZiInfoLine::startDelay=<',startDelay,'>');
+    onMotorRelayFromBoard(startDelay);
+  }
 }
 
 const getValueOfLineCmd =(lineCmd) => {
@@ -148,4 +155,19 @@ const writeMotorId = (id) => {
     console.log('writeMotorId::e=<',e,'>');
   }  
 }
+
+const writeMotorDelay = (delay) => {
+  try {
+    if(gZhuziWriter) {
+      const reqcalibrate = `delay:${delay}\n`;
+      const wBuff = new TextEncoder().encode(reqcalibrate);
+      console.log('writeMotorDelay::wBuff=<',wBuff,'>');
+      gZhuziWriter.write(wBuff);
+    }
+  }
+  catch(e) {
+    console.log('writeMotorDelay::e=<',e,'>');
+  }  
+}
+
 

@@ -37,6 +37,8 @@ const tryOpenZhuZiDevice = (port) => {
 const ZhuZiMotorDevices = {};
 
 const ZhuZiMotorId = 'motorid=<';
+const ZhuZiHallRunStep = 'iHallTurnRunStep=<';
+
 const onZhuZiInfoLine = (lineCmd,port) => {
   //console.log('onZhuZiInfoLine::lineCmd=<',lineCmd,'>');
   if(lineCmd.indexOf(ZhuZiMotorId) >= 0) {
@@ -46,9 +48,13 @@ const onZhuZiInfoLine = (lineCmd,port) => {
     //console.log('onZhuZiInfoLine::motoridStr=<',motoridStr,'>');
     onMotorIdFromBoard(motoridStr,port);
   }
-
+  if(lineCmd.indexOf(ZhuZiHallRunStep) >= 0) {
+    const step = getValueOfLineCmd(lineCmd);
+    //console.log('onZhuZiInfoLine::step=<',step,'>');
+    //console.log('tryOpenZhuZiDevice::port.path=<',port.path,'>');
+    onHallCounterFromBoard(parseInt(step),port.path);
+  }
 }
-
 const getValueOfLineCmd =(lineCmd) => {
   const start = lineCmd.indexOf('=<');
   const end = lineCmd.indexOf('>');
@@ -65,6 +71,17 @@ const onMotorIdFromBoard = (motorid,port) => {
   console.log('onMotorIdFromBoard::port=<',port.path,'>');
   ZhuZiMotorDevices[motorid] = port;
 }
+
+const HallRunStepOnTimeLine = [];
+const onHallCounterFromBoard = (step,port) => {
+  //console.log('onHallCounterFromBoard::motorid=<',motorid,'>');
+  //console.log('onHallCounterFromBoard::port=<',port,'>');
+  HallRunStepOnTimeLine.push({step:step,port:port,ts:new Date()});
+  if(step === 1) {
+    console.log('onHallCounterFromBoard::HallRunStepOnTimeLine=<',JSON.stringify(HallRunStepOnTimeLine,undefined,2),'>');
+  }
+}
+
 
 const HID = require('node-hid');
 const hidDevices = HID.devices();
@@ -116,17 +133,17 @@ const onGamePadEventForward = (data) => {
   try {
     const reqStrR = 'f\n';
     const wBuffR = Buffer.from(reqStrR,'utf-8');
-    console.log('onGamePadEventForward::wBuffR=<',wBuffR,'>');
+    //console.log('onGamePadEventForward::wBuffR=<',wBuffR,'>');
     portR.write(wBuffR);
     
     const reqStrL = 'z\n';
     const wBuffL = Buffer.from(reqStrL,'utf-8');
-    console.log('onGamePadEventForward::wBuffL=<',wBuffL,'>');
+    //console.log('onGamePadEventForward::wBuffL=<',wBuffL,'>');
     portL.write(wBuffL);
 
     const reqStrGo = 'g\n';
     const wBuffGo = Buffer.from(reqStrGo,'utf-8');
-    console.log('onGamePadEventForward::wBuffGo=<',wBuffGo,'>');
+    //console.log('onGamePadEventForward::wBuffGo=<',wBuffGo,'>');
     portR.write(wBuffGo);    
     portL.write(wBuffGo);    
   }
@@ -136,27 +153,27 @@ const onGamePadEventForward = (data) => {
 }
 
 const onGamePadEventRigth = (data) => {
-  console.log('onGamePadEventRigth::data=<',data,'>');
+  //console.log('onGamePadEventRigth::data=<',data,'>');
 }
 
 const onGamePadEventBack = (data) => {
-  console.log('onGamePadEventBack::data=<',data,'>');
+  //console.log('onGamePadEventBack::data=<',data,'>');
   const portR = ZhuZiMotorDevices['r'];
   const portL = ZhuZiMotorDevices['l'];
   try {
     const reqStrR = 'z\n';
     const wBuffR = Buffer.from(reqStrR,'utf-8');
-    console.log('onGamePadEventForward::wBuffR=<',wBuffR,'>');
+    //console.log('onGamePadEventForward::wBuffR=<',wBuffR,'>');
     portR.write(wBuffR);
     
     const reqStrL = 'f\n';
     const wBuffL = Buffer.from(reqStrL,'utf-8');
-    console.log('onGamePadEventForward::wBuffL=<',wBuffL,'>');
+    //console.log('onGamePadEventForward::wBuffL=<',wBuffL,'>');
     portL.write(wBuffL);
 
     const reqStrGo = 'g\n';
     const wBuffGo = Buffer.from(reqStrGo,'utf-8');
-    console.log('onGamePadEventForward::wBuffGo=<',wBuffGo,'>');
+    //console.log('onGamePadEventForward::wBuffGo=<',wBuffGo,'>');
     portR.write(wBuffGo);    
     portL.write(wBuffGo);    
   }
@@ -166,5 +183,5 @@ const onGamePadEventBack = (data) => {
 }
 
 const onGamePadEventLeft = (data) => {
-  console.log('onGamePadEventLeft::data=<',data,'>');
+  //console.log('onGamePadEventLeft::data=<',data,'>');
 }

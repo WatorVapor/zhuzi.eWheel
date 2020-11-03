@@ -27,6 +27,8 @@
 
 
 static long iHallTurnCounter = 0;
+static uint32_t iMotorStartDelay = 0;
+static uint32_t iMotorStartWait = 0;
 
 void setup() {
   // initialize port for motor control
@@ -47,29 +49,29 @@ void setup() {
   analogWrite(PORT_PWM, 0);
   byte motorid = EEPROM.read(0);
   DUMP_VAR(motorid);
+
+  byte startDelay1 = EEPROM.read(2);
+  byte startDelay2 = EEPROM.read(3);
+  byte startDelay3 = EEPROM.read(4);
+  byte startDelay4 = EEPROM.read(5);
+  uint32_t startDelay = uint32_t(startDelay1) << 24 | uint32_t(startDelay2) << 16 | uint32_t(startDelay3) << 8 | uint32_t(startDelay4);;
+  DUMP_VAR(startDelay);
+  iMotorStartDelay = startDelay;
 }
 
 static int32_t iMainLoopCounter = 0;
 
-const static int32_t iMainLoopPrintA = 1024;
-const static int32_t iMainLoopPrintB = 16;
-const static int32_t iMainLoopPrintSkip = iMainLoopPrintA*iMainLoopPrintB;
 
 static long volatile iHallTurnRunStep = 0;
 static bool iBoolMotorCWFlag = false; //
-static const  int16_t iPositionByHallRangeLow = 50;
-static const  int16_t iPositionByHallRangeDistance = 152;
-static const  int16_t iPositionByHallRangeHigh = iPositionByHallRangeLow + iPositionByHallRangeDistance;
-static int16_t volatile iPositionByHall= -1;
-static uint8_t volatile iConstCurrentSpeed = 0;
-
-static bool iBoolRunCalibrate = false; //
 
 
 
 
-static int16_t volatile iTargetPositionByHall= -1;
-void caclTargetSpeed(void);
+
+void loopMotor(void);
+void stopMotor(void);
+void startMotor(void);
 
 void loop() {
   loopMotor();
@@ -78,20 +80,12 @@ void loop() {
 
 void HallTurnCounterInterrupt(void) {
   iHallTurnCounter++;
-  DUMP_VAR(iHallTurnCounter);
   if(iHallTurnRunStep > 0) {
+    DUMP_VAR(iHallTurnRunStep);
     iHallTurnRunStep--;
   } else {
     stopMotor();
   }
-  if(iBoolMotorCWFlag) {
-    iPositionByHall++;
-  } else {
-    iPositionByHall--;
-  }
-  DUMP_VAR(iPositionByHall);
-  DUMP_VAR(iConstCurrentSpeed);
-  DUMP_VAR(iTargetPositionByHall);
 }
 
 
@@ -146,33 +140,54 @@ void runLongCommand(char ch) {
         EEPROM.write(0,id);
       }
     }
+    if(gHandleStringCommand.startsWith("delay:")) {
+      auto delayValue = gHandleStringCommand.substring(6, gHandleStringCommand.length());
+      DUMP_VAR(delayValue);
+      uint32_t delay = delayValue.toInt();
+      DUMP_VAR(delay);
+      byte *pDelay = (byte *)(&delay);
+      EEPROM.write(5,*pDelay);
+      EEPROM.write(4,*(pDelay+1));
+      EEPROM.write(3,*(pDelay+2));
+      EEPROM.write(2,*(pDelay+3));
+    }
     gHandleStringCommand = "";
   }
 }
 
-void runCalibrate(void) {
-  iBoolMotorCWFlag = false;
-  digitalWrite(PORT_CW,LOW);
-  iBoolRunCalibrate = true;
-  startMotor();
-}
 
 const static uint8_t iConstMaxSpeed = 64;
 const static uint8_t iConstMinSpeed = 12;
 const static uint8_t iConstBrakeDistance = 32;
 
+static bool bMotorToBeStarted = false;
 
 void stopMotor(void) {
-  analogWrite(PORT_PWM, 0);
+  analogWrite(PORT_PWM, 2);
   digitalWrite(PORT_BRAKE,LOW);
   iHallTurnRunStep = -1;
+  bMotorToBeStarted = false;
 }
 void startMotor(void) {
-  analogWrite(PORT_PWM, 200);
-  iConstCurrentSpeed = 32;
+  iMotorStartWait = iMotorStartDelay;
+  bMotorToBeStarted = true;
+  if(iMotorStartWait == 0) {
+    startMotorReal();
+  }
+}
+void startMotorReal(void) {
+  analogWrite(PORT_PWM, 64);
   digitalWrite(PORT_BRAKE,HIGH);
-  iHallTurnRunStep = 8;
-  //DUMP_VAR(iHallTurnRunStep);
+  iHallTurnRunStep = 128;
+  DUMP_VAR(iHallTurnRunStep);
+  bMotorToBeStarted = false;
 }
 void loopMotor(void) {
+  iMotorStartWait--;
+  if(bMotorToBeStarted) {
+    //DUMP_VAR(iMotorStartWait);
+    if(iMotorStartWait == 0) {
+      startMotorReal();
+    }
+  }
 }
