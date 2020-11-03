@@ -1,9 +1,11 @@
+#include <EEPROM.h>
+
 #define DUMP_VAR(x)  { \
   Serial.print(__LINE__);\
   Serial.print("@@"#x"=<");\
   Serial.print(x);\
   Serial.print(">");\
-  Serial.print("\n");\
+  Serial.print("\r\n");\
 }
 
 #define PORT_BRAKE 11
@@ -43,6 +45,8 @@ void setup() {
   digitalWrite(PORT_BRAKE,LOW);
   digitalWrite(PORT_CW,HIGH);
   analogWrite(PORT_PWM, 0);
+  byte motorid = EEPROM.read(0);
+  DUMP_VAR(motorid);
 }
 
 static int32_t iMainLoopCounter = 0;
@@ -133,6 +137,14 @@ void runLongCommand(char ch) {
       speedValue.trim();
       DUMP_VAR(speedValue);
       auto spd = speedValue.toInt();
+    }
+    if(gHandleStringCommand.startsWith("id:")) {
+      auto idValue = gHandleStringCommand.substring(3, gHandleStringCommand.length());
+      DUMP_VAR(idValue);
+      if(idValue.length() > 0) {
+        char id = idValue.charAt(0);
+        EEPROM.write(0,id);
+      }
     }
     gHandleStringCommand = "";
   }

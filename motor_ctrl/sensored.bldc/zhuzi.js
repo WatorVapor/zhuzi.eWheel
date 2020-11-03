@@ -66,32 +66,18 @@ const readSerailData = (reader)=> {
   });          
 };
 
-const ElegPosCounterStarter = 'iPositionByHall=<';
-const ElegPosLowStarter = 'iPositionByHallRangeLow=<';
-const ElegPosHighStarter = 'iPositionByHallRangeHigh=<';
-const ElegSpeedStarter = 'iConstCurrentSpeed=<';
+const ZhuZiMotorId = 'motorid=<';
 
 const onZhuZiInfoLine = (lineCmd) => {
   //console.log('onZhuZiInfoLine::lineCmd=<',lineCmd,'>');
-  if( lineCmd.indexOf(ElegPosCounterStarter) >= 0) {
-    const currentPos = getValueOfLineCmd(lineCmd);
-    //console.log('onZhuZiInfoLine::currentPos=<',currentPos,'>');
-    updateRangevalue(currentPos);
+  if(lineCmd.indexOf(ZhuZiMotorId) >= 0) {
+    const motorid = getValueOfLineCmd(lineCmd);
+    console.log('onZhuZiInfoLine::motorid=<',motorid,'>');
+    const motoridStr = String.fromCharCode(motorid);
+    console.log('onZhuZiInfoLine::motoridStr=<',motoridStr,'>');
+    onMotorIdFromBoard(motoridStr);
   }
-  if(lineCmd.indexOf(ElegPosLowStarter) >= 0) {
-    const lowPos = getValueOfLineCmd(lineCmd);
-    console.log('onZhuZiInfoLine::lowPos=<',lowPos,'>');
-    changeLowOfPos(lowPos);
-  }
-  if(lineCmd.indexOf(ElegPosHighStarter) >= 0) {
-    const hightPos = getValueOfLineCmd(lineCmd);
-    console.log('onZhuZiInfoLine::hightPos=<',hightPos,'>');
-    changeHighOfPos(hightPos);
-  }
-  if(lineCmd.indexOf(ElegSpeedStarter) >= 0) {
-    const speed = getValueOfLineCmd(lineCmd);
-    console.log('onZhuZiInfoLine::speed=<',speed,'>');
-  }
+
 }
 
 const getValueOfLineCmd =(lineCmd) => {
@@ -137,16 +123,29 @@ const onClickTurnF = (evt) => {
 
 const onClickTurnG = (evt) => {
   try {
-  if(gZhuziWriter) {
-    const reqcalibrate = 'g\n';
-    const wBuff = new TextEncoder().encode(reqcalibrate);
-    console.log('onClickTurnG::wBuff=<',wBuff,'>');
-    gZhuziWriter.write(wBuff);
-  }
+    if(gZhuziWriter) {
+      const reqcalibrate = 'g\n';
+      const wBuff = new TextEncoder().encode(reqcalibrate);
+      console.log('onClickTurnG::wBuff=<',wBuff,'>');
+      gZhuziWriter.write(wBuff);
+    }
   }
   catch(e) {
     console.log('onClickTurnG::e=<',e,'>');
   }
 }
 
+const writeMotorId = (id) => {
+  try {
+    if(gZhuziWriter) {
+      const reqcalibrate = `id:${id}\n`;
+      const wBuff = new TextEncoder().encode(reqcalibrate);
+      console.log('writeMotorId::wBuff=<',wBuff,'>');
+      gZhuziWriter.write(wBuff);
+    }
+  }
+  catch(e) {
+    console.log('writeMotorId::e=<',e,'>');
+  }  
+}
 

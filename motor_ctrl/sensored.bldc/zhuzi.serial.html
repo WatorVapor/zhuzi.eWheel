@@ -18,6 +18,17 @@
 
       <div class="row mt-3">
         <div class="col-2 justify-content-center">
+          <div class="input-group mb-3" id="vue-ui-motor-id">
+            <div class="input-group-prepend">
+              <span class="input-group-text">ID:</span>
+            </div>
+            <input type="text" class="form-control" v-model="id" :value="id"></input>
+          </div>
+        </div>
+      </div>
+
+      <div class="row mt-3">
+        <div class="col-2 justify-content-center">
           <input type="button" class="btn btn-info" onClick="onClickTurnZ(this)" value="CW + "></input>
         </div>
         <div class="col-2 justify-content-center">
@@ -41,9 +52,8 @@
         </div>
       </div>
     </div>
-
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsrsasign/8.0.12/jsrsasign-all-min.js" integrity="sha256-EI1piDYqyKFAy+ykWQZRjH5kkw9eIYE/IahQWg1rXt0=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.0.2/dist/vue.global.prod.js" integrity="sha256-9A0tu3fG/g3NsSSchTDl6Ady+cfh4cWf2Il+J/rhzkI=" crossorigin="anonymous"></script>
+    <script src="./vue.ui.js"></script>
     <script src="./zhuzi.js"></script>
   </body>
 </html>
