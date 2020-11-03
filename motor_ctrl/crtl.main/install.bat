@@ -1,1 +1,2 @@
-npm install serialport --save
+npm install --save serialport node-hid
+pause
