@@ -1,0 +1,12 @@
+[Unit]
+Description= Zhu Zi Auto run.
+
+[Service]
+ExecStart=/home/ma/zhuzi.eWheel/motor_ctrl/crtl.main/zhuzi.run.sh
+ExecStop=/bin/kill ${MAINPID}
+Restart=always
+Type=simple
+Group=sudo
+
+[Install]
+WantedBy=default.target

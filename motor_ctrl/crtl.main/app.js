@@ -3,10 +3,10 @@ const Readline = SerialPort.parsers.Readline;
 
 const findZhuZiDevices = async () => {
   const ports = await SerialPort.list();
-  //console.log('findZhuZiDevices::ports=<',ports,'>');
+  console.log('findZhuZiDevices::ports=<',ports,'>');
   for(const port of ports) {
     //console.log('findZhuZiDevices::port=<',port,'>');
-    if(port.vendorId === '1A86') {
+    if(port.vendorId === '1A86' || port.vendorId === '1a86') {
       //console.log('findZhuZiDevices::port=<',port,'>');
       tryOpenZhuZiDevice(port);
     }
