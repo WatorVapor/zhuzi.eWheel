@@ -161,12 +161,14 @@ const static uint8_t iConstMinSpeed = 12;
 const static uint8_t iConstBrakeDistance = 32;
 
 static bool bMotorToBeStarted = false;
+static bool bMotorRunning = false;
 
 void stopMotor(void) {
   analogWrite(PORT_PWM, 2);
   digitalWrite(PORT_BRAKE,LOW);
   iHallTurnRunStep = -1;
   bMotorToBeStarted = false;
+  bMotorRunning = false;
 }
 void startMotor(void) {
   iMotorStartWait = iMotorStartDelay;
@@ -176,11 +178,12 @@ void startMotor(void) {
   }
 }
 void startMotorReal(void) {
-  analogWrite(PORT_PWM, 64);
+  analogWrite(PORT_PWM, 128);
   digitalWrite(PORT_BRAKE,HIGH);
   iHallTurnRunStep = 128;
   DUMP_VAR(iHallTurnRunStep);
   bMotorToBeStarted = false;
+  bMotorRunning = true;
 }
 void loopMotor(void) {
   iMotorStartWait--;
