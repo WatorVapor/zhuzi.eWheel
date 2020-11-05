@@ -47,7 +47,7 @@ const readSerailData = (reader)=> {
     //console.log('readSerailData::readOne buffParam=<',buffParam,'>');
     if(buffParam.length > 1) {
       for(const lineCmd of buffParam) {
-        //console.log('readSerailData::readOne lineCmd=<',lineCmd,'>');
+        console.log('readSerailData::readOne lineCmd=<',lineCmd,'>');
         if(lineCmd) {
           readLineBuffer.push(lineCmd);
           onZhuZiInfoLine(lineCmd);

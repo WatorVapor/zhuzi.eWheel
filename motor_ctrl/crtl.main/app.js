@@ -35,6 +35,7 @@ const tryOpenZhuZiDevice = (port) => {
 }
 
 const ZhuZiMotorDevices = {};
+const ZhuZiMotorIdByPath = {};
 
 const ZhuZiMotorId = 'motorid=<';
 const ZhuZiHallRunStep = 'iHallTurnRunStep=<';
@@ -67,18 +68,83 @@ const getValueOfLineCmd =(lineCmd) => {
 }
 
 const onMotorIdFromBoard = (motorid,port) => {
-  console.log('onMotorIdFromBoard::motorid=<',motorid,'>');
-  console.log('onMotorIdFromBoard::port=<',port.path,'>');
+  //console.log('onMotorIdFromBoard::motorid=<',motorid,'>');
+  //console.log('onMotorIdFromBoard::port=<',port.path,'>');
   ZhuZiMotorDevices[motorid] = port;
+  ZhuZiMotorIdByPath[port.path] = motorid;
+  //console.log('onMotorIdFromBoard::ZhuZiMotorDevices=<',ZhuZiMotorDevices,'>');
+  //console.log('onMotorIdFromBoard::ZhuZiMotorIdByPath=<',ZhuZiMotorIdByPath,'>');
 }
 
-const HallRunStepOnTimeLine = [];
+const HallRunStepOnTimeLine = {};
 const onHallCounterFromBoard = (step,port) => {
   //console.log('onHallCounterFromBoard::motorid=<',motorid,'>');
   //console.log('onHallCounterFromBoard::port=<',port,'>');
-  HallRunStepOnTimeLine.push({step:step,port:port,ts:new Date()});
+  const motorid = ZhuZiMotorIdByPath[port];
+  if(!HallRunStepOnTimeLine[motorid]) {
+    HallRunStepOnTimeLine[motorid] = [];
+  }
+  HallRunStepOnTimeLine[motorid].push({step:step,ts:new Date()});
+  /*
   if(step === 1) {
     console.log('onHallCounterFromBoard::HallRunStepOnTimeLine=<',JSON.stringify(HallRunStepOnTimeLine,undefined,2),'>');
+  }
+  */
+  feedBackSpeedHall(HallRunStepOnTimeLine);
+}
+
+const clearHallStepBuffer = () => {
+  let keys = Object.keys(HallRunStepOnTimeLine);
+  for(const key of keys) {
+    delete HallRunStepOnTimeLine[key];
+  }
+}
+
+const iBaseSpeedOfMotion = 64;
+const iStepSpeedOfMotion = 16;
+
+const trimSpeed = (speed) => {
+  if(speed < 0) {
+    speed = 0;
+  }
+  if(speed > 255) {
+    speed = 255;
+  }
+  return speed;
+}
+
+const feedBackSpeedHall = ()=> {
+  //console.log('feedBackSpeedHall::HallRunStepOnTimeLine=<',HallRunStepOnTimeLine,'>');
+  //console.log('feedBackSpeedHall::HallRunStepOnTimeLine=<',JSON.stringify(HallRunStepOnTimeLine,undefined,2),'>');
+  let keys = Object.keys(HallRunStepOnTimeLine);
+  if(keys.length < 2) {
+    return;
+  }
+  const aMotor = keys[0];
+  const aMotionSteps = HallRunStepOnTimeLine[aMotor];
+  const bMotor = keys[1];
+  const bMotionSteps = HallRunStepOnTimeLine[bMotor];
+  //console.log('feedBackSpeedHall::aMotionSteps=<',aMotionSteps,'>');
+  //console.log('feedBackSpeedHall::bMotionSteps=<',bMotionSteps,'>');
+  const stepDiff = aMotionSteps.length - bMotionSteps.length;
+  console.log('feedBackSpeedHall::stepDiff=<',stepDiff,'>');
+  if(Math.abs(stepDiff) > 0) {
+    const deltaSpeed = iStepSpeedOfMotion * stepDiff;
+    
+    const speedA = trimSpeed(iBaseSpeedOfMotion - deltaSpeed);
+    const reqStrSpdA = `spd:${speedA}\n`;
+    const wBuffSpdA = Buffer.from(reqStrSpdA,'utf-8');
+    console.log('onGamePadEventForward::reqStrSpdA=<',reqStrSpdA,'>');
+    const portA = ZhuZiMotorDevices[aMotor];
+    portA.write(wBuffSpdA);    
+   
+    const speedB = trimSpeed(iBaseSpeedOfMotion + deltaSpeed);
+    const reqStrSpdB = `spd:${speedB}\n`;
+    const wBuffSpdB = Buffer.from(reqStrSpdB,'utf-8');
+    console.log('onGamePadEventForward::reqStrSpdB=<',reqStrSpdB,'>');
+    const portB = ZhuZiMotorDevices[bMotor];
+    portB.write(wBuffSpdB);    
+    
   }
 }
 
@@ -144,8 +210,9 @@ const onGamePadEventForward = (data) => {
     const reqStrGo = 'g\n';
     const wBuffGo = Buffer.from(reqStrGo,'utf-8');
     //console.log('onGamePadEventForward::wBuffGo=<',wBuffGo,'>');
+    clearHallStepBuffer();
     portR.write(wBuffGo);    
-    portL.write(wBuffGo);    
+    portL.write(wBuffGo);
   }
   catch(e) {
     console.log('onGamePadEventForward::e=<',e,'>');
@@ -174,6 +241,7 @@ const onGamePadEventBack = (data) => {
     const reqStrGo = 'g\n';
     const wBuffGo = Buffer.from(reqStrGo,'utf-8');
     //console.log('onGamePadEventForward::wBuffGo=<',wBuffGo,'>');
+    clearHallStepBuffer();
     portR.write(wBuffGo);    
     portL.write(wBuffGo);    
   }

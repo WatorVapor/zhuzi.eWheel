@@ -1,4 +1,5 @@
 #include <EEPROM.h>
+#include <inttypes.h>
 
 #define DUMP_VAR(x)  { \
   Serial.print(__LINE__);\
@@ -123,6 +124,8 @@ void handleIncommingCommand(void) {
 }
 
 static String gHandleStringCommand;
+static bool bMotorRunning = false;
+
 void runLongCommand(char ch) {
   gHandleStringCommand += ch;
   if(ch == '\n') {
@@ -130,7 +133,10 @@ void runLongCommand(char ch) {
       auto speedValue = gHandleStringCommand.substring(4, gHandleStringCommand.length());
       speedValue.trim();
       DUMP_VAR(speedValue);
-      auto spd = speedValue.toInt();
+      int spd = speedValue.toInt();
+      if(bMotorRunning) {
+        analogWrite(PORT_PWM, spd);
+      }
     }
     if(gHandleStringCommand.startsWith("id:")) {
       auto idValue = gHandleStringCommand.substring(3, gHandleStringCommand.length());
@@ -161,10 +167,9 @@ const static uint8_t iConstMinSpeed = 12;
 const static uint8_t iConstBrakeDistance = 32;
 
 static bool bMotorToBeStarted = false;
-static bool bMotorRunning = false;
 
 void stopMotor(void) {
-  analogWrite(PORT_PWM, 2);
+  analogWrite(PORT_PWM, 0);
   digitalWrite(PORT_BRAKE,LOW);
   iHallTurnRunStep = -1;
   bMotorToBeStarted = false;
@@ -177,10 +182,14 @@ void startMotor(void) {
     startMotorReal();
   }
 }
+
+static int32_t iTurnTimerOutCounter = 0UL;
+const static int32_t iConstTurnTimeout = 1024UL*1024UL;
 void startMotorReal(void) {
-  analogWrite(PORT_PWM, 128);
+  analogWrite(PORT_PWM, 64);
   digitalWrite(PORT_BRAKE,HIGH);
   iHallTurnRunStep = 128;
+  iTurnTimerOutCounter = iConstTurnTimeout;
   DUMP_VAR(iHallTurnRunStep);
   bMotorToBeStarted = false;
   bMotorRunning = true;
@@ -188,9 +197,20 @@ void startMotorReal(void) {
 void loopMotor(void) {
   iMotorStartWait--;
   if(bMotorToBeStarted) {
-    //DUMP_VAR(iMotorStartWait);
     if(iMotorStartWait == 0) {
       startMotorReal();
     }
+  }
+  if(bMotorRunning) {
+    iTurnTimerOutCounter--;
+    if( iTurnTimerOutCounter == 0) {
+      DUMP_VAR(iTurnTimerOutCounter);
+      stopMotor();
+    }
+    /*
+    if( iTurnTimerOutCounter < 0) {
+      DUMP_VAR(iTurnTimerOutCounter);
+    }
+    */
   }
 }
