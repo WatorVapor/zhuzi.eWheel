@@ -186,9 +186,9 @@ void startMotor(void) {
 static int32_t iTurnTimerOutCounter = 0UL;
 const static int32_t iConstTurnTimeout = 1024UL*1024UL;
 void startMotorReal(void) {
-  analogWrite(PORT_PWM, 64);
+  analogWrite(PORT_PWM, 128);
   digitalWrite(PORT_BRAKE,HIGH);
-  iHallTurnRunStep = 128;
+  iHallTurnRunStep = 32;
   iTurnTimerOutCounter = iConstTurnTimeout;
   DUMP_VAR(iHallTurnRunStep);
   bMotorToBeStarted = false;

@@ -90,7 +90,7 @@ const onHallCounterFromBoard = (step,port) => {
     console.log('onHallCounterFromBoard::HallRunStepOnTimeLine=<',JSON.stringify(HallRunStepOnTimeLine,undefined,2),'>');
   }
   */
-  feedBackSpeedHall(HallRunStepOnTimeLine);
+  feedBackSpeedHall();
 }
 
 const clearHallStepBuffer = () => {
@@ -100,15 +100,15 @@ const clearHallStepBuffer = () => {
   }
 }
 
-const iBaseSpeedOfMotion = 64;
-const iStepSpeedOfMotion = 16;
+const iBaseSpeedOfMotion = 128;
+const iStepSpeedOfMotion = 8;
 
 const trimSpeed = (speed) => {
-  if(speed < 0) {
-    speed = 0;
+  if(speed < 32) {
+    speed = 32;
   }
-  if(speed > 255) {
-    speed = 255;
+  if(speed > 196) {
+    speed = 196;
   }
   return speed;
 }
@@ -128,7 +128,7 @@ const feedBackSpeedHall = ()=> {
   //console.log('feedBackSpeedHall::bMotionSteps=<',bMotionSteps,'>');
   const stepDiff = aMotionSteps.length - bMotionSteps.length;
   console.log('feedBackSpeedHall::stepDiff=<',stepDiff,'>');
-  if(Math.abs(stepDiff) > 0) {
+  if(Math.abs(stepDiff) > 1) {
     const deltaSpeed = iStepSpeedOfMotion * stepDiff;
     
     const speedA = trimSpeed(iBaseSpeedOfMotion - deltaSpeed);
@@ -145,6 +145,24 @@ const feedBackSpeedHall = ()=> {
     const portB = ZhuZiMotorDevices[bMotor];
     portB.write(wBuffSpdB);    
     
+  }
+  reportStats(aMotionSteps,bMotionSteps);
+}
+
+const reportStats = (aMotionSteps,bMotionSteps) => {
+  const lastAMotion = aMotionSteps[aMotionSteps.length-1];
+  const lastBMotion = bMotionSteps[bMotionSteps.length-1];
+  if(lastAMotion.step === 1 && lastBMotion.step === 1) {
+    console.log('feedBackSpeedHall::lastAMotion=<',lastAMotion,'>');
+    console.log('feedBackSpeedHall::lastBMotion=<',lastBMotion,'>');
+    const firstAMotion = aMotionSteps[0];
+    const firstBMotion = bMotionSteps[0];
+    console.log('feedBackSpeedHall::firstAMotion=<',firstAMotion,'>');
+    console.log('feedBackSpeedHall::firstBMotion=<',firstBMotion,'>');
+    const elscapeA = lastAMotion.ts - firstAMotion.ts;
+    console.log('feedBackSpeedHall::elscapeA=<',elscapeA,'>');
+    const elscapeB = lastBMotion.ts - firstBMotion.ts;
+    console.log('feedBackSpeedHall::elscapeB=<',elscapeB,'>');
   }
 }
 
