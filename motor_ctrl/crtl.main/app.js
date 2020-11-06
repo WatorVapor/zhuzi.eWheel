@@ -239,6 +239,29 @@ const onGamePadEventForward = (data) => {
 
 const onGamePadEventRigth = (data) => {
   //console.log('onGamePadEventRigth::data=<',data,'>');
+  const portR = ZhuZiMotorDevices['r'];
+  const portL = ZhuZiMotorDevices['l'];
+  try {
+    const reqStrR = 'z\n';
+    const wBuffR = Buffer.from(reqStrR,'utf-8');
+    //console.log('onGamePadEventForward::wBuffR=<',wBuffR,'>');
+    portR.write(wBuffR);
+    
+    const reqStrL = 'z\n';
+    const wBuffL = Buffer.from(reqStrL,'utf-8');
+    //console.log('onGamePadEventForward::wBuffL=<',wBuffL,'>');
+    portL.write(wBuffL);
+
+    const reqStrGo = 'g\n';
+    const wBuffGo = Buffer.from(reqStrGo,'utf-8');
+    //console.log('onGamePadEventForward::wBuffGo=<',wBuffGo,'>');
+    clearHallStepBuffer();
+    portR.write(wBuffGo);    
+    portL.write(wBuffGo);
+  }
+  catch(e) {
+    console.log('onGamePadEventForward::e=<',e,'>');
+  }
 }
 
 const onGamePadEventBack = (data) => {
@@ -270,4 +293,27 @@ const onGamePadEventBack = (data) => {
 
 const onGamePadEventLeft = (data) => {
   //console.log('onGamePadEventLeft::data=<',data,'>');
+  const portR = ZhuZiMotorDevices['r'];
+  const portL = ZhuZiMotorDevices['l'];
+  try {
+    const reqStrR = 'f\n';
+    const wBuffR = Buffer.from(reqStrR,'utf-8');
+    //console.log('onGamePadEventForward::wBuffR=<',wBuffR,'>');
+    portR.write(wBuffR);
+    
+    const reqStrL = 'f\n';
+    const wBuffL = Buffer.from(reqStrL,'utf-8');
+    //console.log('onGamePadEventForward::wBuffL=<',wBuffL,'>');
+    portL.write(wBuffL);
+
+    const reqStrGo = 'g\n';
+    const wBuffGo = Buffer.from(reqStrGo,'utf-8');
+    //console.log('onGamePadEventForward::wBuffGo=<',wBuffGo,'>');
+    clearHallStepBuffer();
+    portR.write(wBuffGo);    
+    portL.write(wBuffGo);
+  }
+  catch(e) {
+    console.log('onGamePadEventForward::e=<',e,'>');
+  }
 }
