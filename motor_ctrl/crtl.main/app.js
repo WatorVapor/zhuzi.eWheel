@@ -90,7 +90,9 @@ const onHallCounterFromBoard = (step,port) => {
     console.log('onHallCounterFromBoard::HallRunStepOnTimeLine=<',JSON.stringify(HallRunStepOnTimeLine,undefined,2),'>');
   }
   */
-  feedBackSpeedHall();
+  if(step > 8) {
+    feedBackSpeedHall();
+  }
 }
 
 const clearHallStepBuffer = () => {
@@ -151,7 +153,7 @@ const feedBackSpeedHall = ()=> {
 }
 */
 
-const iStepSpeedOfMotionBaseTime = 8*100;
+const iStepSpeedOfMotionBaseTime = 1*100;
 
 const feedBackSpeedHall = ()=> {
   //console.log('feedBackSpeedHall::HallRunStepOnTimeLine=<',HallRunStepOnTimeLine,'>');
