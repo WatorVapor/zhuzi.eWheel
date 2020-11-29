@@ -110,9 +110,10 @@ const trimSpeed = (speed) => {
   if(speed > 196) {
     speed = 196;
   }
-  return speed;
+  return parseInt(speed);
 }
 
+/*
 const feedBackSpeedHall = ()=> {
   //console.log('feedBackSpeedHall::HallRunStepOnTimeLine=<',HallRunStepOnTimeLine,'>');
   //console.log('feedBackSpeedHall::HallRunStepOnTimeLine=<',JSON.stringify(HallRunStepOnTimeLine,undefined,2),'>');
@@ -147,6 +148,67 @@ const feedBackSpeedHall = ()=> {
     
   }
   reportStats(aMotionSteps,bMotionSteps);
+}
+*/
+
+const iStepSpeedOfMotionBaseTime = 8*100;
+
+const feedBackSpeedHall = ()=> {
+  //console.log('feedBackSpeedHall::HallRunStepOnTimeLine=<',HallRunStepOnTimeLine,'>');
+  //console.log('feedBackSpeedHall::HallRunStepOnTimeLine=<',JSON.stringify(HallRunStepOnTimeLine,undefined,2),'>');
+  let keys = Object.keys(HallRunStepOnTimeLine);
+  if(keys.length < 2) {
+    return;
+  }
+  const aMotor = keys[0];
+  const aMotionSteps = HallRunStepOnTimeLine[aMotor];
+  const bMotor = keys[1];
+  const bMotionSteps = HallRunStepOnTimeLine[bMotor];
+  //console.log('feedBackSpeedHall::aMotionSteps=<',aMotionSteps,'>');
+  //console.log('feedBackSpeedHall::bMotionSteps=<',bMotionSteps,'>');
+  let speedA = 0.0;
+  if(aMotionSteps.length > 2) {
+    const aMotorStartAt = aMotionSteps[1];
+    const aMotorCurAt = aMotionSteps[aMotionSteps.length-1];
+    //console.log('feedBackSpeedHall::aMotorStartAt=<',aMotorStartAt,'>');
+    //console.log('feedBackSpeedHall::aMotorCurAt=<',aMotorCurAt,'>');
+    const escape_ms = aMotorCurAt.ts  - aMotorStartAt.ts;
+    speedA = (aMotorStartAt.step - aMotorCurAt.step) / escape_ms;
+  }
+  //console.log('feedBackSpeedHall::speedA=<',speedA,'>');
+
+  let speedB = 0.0;
+  if(bMotionSteps.length > 2) {
+    const bMotorStartAt = bMotionSteps[1];
+    const bMotorCurAt = bMotionSteps[bMotionSteps.length-1];
+    //console.log('feedBackSpeedHall::bMotorStartAt=<',bMotorStartAt,'>');
+    //console.log('feedBackSpeedHall::bMotorCurAt=<',bMotorCurAt,'>');
+    const escape_ms = bMotorCurAt.ts  - bMotorStartAt.ts;
+    speedB = (bMotorStartAt.step - bMotorCurAt.step) / escape_ms;
+  }
+  //console.log('feedBackSpeedHall::speedB=<',speedB,'>');
+  const speedDiff = speedA - speedB;
+  console.log('feedBackSpeedHall::speedDiff=<',speedDiff,'>');
+  if(Math.abs(speedDiff) > 0.0) {
+    const deltaSpeed = iStepSpeedOfMotionBaseTime * speedDiff;
+    
+    const speedA = trimSpeed(iBaseSpeedOfMotion - deltaSpeed);
+    console.log('feedBackSpeedHall::speedA=<',speedA,'>');
+    const reqStrSpdA = `spd:${speedA}\n`;
+    const wBuffSpdA = Buffer.from(reqStrSpdA,'utf-8');
+    console.log('feedBackSpeedHall::reqStrSpdA=<',reqStrSpdA,'>');
+    const portA = ZhuZiMotorDevices[aMotor];
+    portA.write(wBuffSpdA);    
+   
+    const speedB = trimSpeed(iBaseSpeedOfMotion + deltaSpeed);
+    console.log('feedBackSpeedHall::speedB=<',speedB,'>');
+    const reqStrSpdB = `spd:${speedB}\n`;
+    const wBuffSpdB = Buffer.from(reqStrSpdB,'utf-8');
+    console.log('feedBackSpeedHall::reqStrSpdB=<',reqStrSpdB,'>');
+    const portB = ZhuZiMotorDevices[bMotor];
+    portB.write(wBuffSpdB);    
+    
+  }
 }
 
 const reportStats = (aMotionSteps,bMotionSteps) => {
