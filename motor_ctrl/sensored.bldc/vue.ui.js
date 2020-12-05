@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 });
 let vmMotorID = false;
 let vmMotorDelay = false;
+let vmPwmSpeed = false;
 const createVueApps = () => {
   const motorIdConf = {
     data() {
@@ -40,6 +41,24 @@ const createVueApps = () => {
   //console.log('createVueApps::vmMotorDelay=<',vmMotorDelay,'>');
   
   
+
+  const pwmSpeed = {
+    data() {
+      return {
+        pwm:0
+      }
+    },
+    watch: {
+      pwm(val,oldVal) {
+        onChangePwmSpeed(val,oldVal);
+      },
+      deep: true
+    }
+  };
+  const appPwmSpeed = Vue.createApp(pwmSpeed);
+  //console.log('createVueApps::appPwmSpeed=<',appPwmSpeed,'>');
+  vmPwmSpeed = appPwmSpeed.mount('#vue-ui-pwm-speed');
+  console.log('createVueApps::vmPwmSpeed=<',vmPwmSpeed,'>');
   
 }
 
@@ -64,4 +83,14 @@ const onChangeMotorDelay = (val,oldVal) => {
 
 const onMotorRelayFromBoard = (delay) => {
   vmMotorDelay.delay = delay;
+}
+
+
+const onChangePwmSpeed = (elem) => {
+  console.log('onChangePwmSpeed::elem=<',elem,'>');
+  const pwmSpeed = parseInt(elem.value);
+  console.log('onChangePwmSpeed::pwmSpeed=<',pwmSpeed,'>');
+  const label = elem.parentElement.parentElement.getElementsByTagName('label')[1];
+  label.textContent = `${pwmSpeed}`;
+  writeMotorSpeed(pwmSpeed);
 }

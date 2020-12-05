@@ -170,4 +170,17 @@ const writeMotorDelay = (delay) => {
   }  
 }
 
+const writeMotorSpeed = (pwm) => {
+  try {
+    if(gZhuziWriter) {
+      const reqcalibrate = `g\nspd:${pwm}\n`;
+      const wBuff = new TextEncoder().encode(reqcalibrate);
+      console.log('writeMotorSpeed::wBuff=<',wBuff,'>');
+      gZhuziWriter.write(wBuff);
+    }
+  }
+  catch(e) {
+    console.log('writeMotorSpeed::e=<',e,'>');
+  }  
+}
 

@@ -50,6 +50,18 @@
       </div>
 
 
+      <div class="row mt-3">
+        <form>
+          <div class="form-group row" id="vue-ui-pwm-speed">
+            <label class="form-group col-2">speed</label>
+            <div class="form-group col-8">
+              <input type="range" min="0" max="255" step="1" onchange="onChangePwmSpeed(this)"></input>
+            </div>
+            <label class="form-group col-2"></label>
+          </div>
+        </form>
+      </div>
+
     </div>
     
     <hr/>
@@ -62,7 +74,7 @@
         </div>
       </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/vue@3.0.2/dist/vue.global.prod.js" integrity="sha256-9A0tu3fG/g3NsSSchTDl6Ady+cfh4cWf2Il+J/rhzkI=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.0.4/dist/vue.global.prod.js" integrity="sha256-ZUS0/GPBtqh6O8SEMapeXWO6j5wmb7Krpag5U+s+WMk=" crossorigin="anonymous"></script>
     <script src="./vue.ui.js"></script>
     <script src="./zhuzi.js"></script>
   </body>
