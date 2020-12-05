@@ -53,7 +53,9 @@ const onZhuZiInfoLine = (lineCmd,port) => {
     const step = getValueOfLineCmd(lineCmd);
     //console.log('onZhuZiInfoLine::step=<',step,'>');
     //console.log('tryOpenZhuZiDevice::port.path=<',port.path,'>');
-    onHallCounterFromBoard(parseInt(step),port.path);
+    if(gControlByAnalog === false) {
+      onHallCounterFromBoard(parseInt(step),port.path);
+    }
   }
 }
 const getValueOfLineCmd =(lineCmd) => {
@@ -190,23 +192,23 @@ const feedBackSpeedHall = ()=> {
   }
   //console.log('feedBackSpeedHall::speedB=<',speedB,'>');
   const speedDiff = speedA - speedB;
-  console.log('feedBackSpeedHall::speedDiff=<',speedDiff,'>');
+  //console.log('feedBackSpeedHall::speedDiff=<',speedDiff,'>');
   if(Math.abs(speedDiff) > 0.0) {
     const deltaSpeed = iStepSpeedOfMotionBaseTime * speedDiff;
     
     const speedA = trimSpeed(iBaseSpeedOfMotion - deltaSpeed);
-    console.log('feedBackSpeedHall::speedA=<',speedA,'>');
+    //console.log('feedBackSpeedHall::speedA=<',speedA,'>');
     const reqStrSpdA = `spd:${speedA}\n`;
     const wBuffSpdA = Buffer.from(reqStrSpdA,'utf-8');
-    console.log('feedBackSpeedHall::reqStrSpdA=<',reqStrSpdA,'>');
+    //console.log('feedBackSpeedHall::reqStrSpdA=<',reqStrSpdA,'>');
     const portA = ZhuZiMotorDevices[aMotor];
     portA.write(wBuffSpdA);    
    
     const speedB = trimSpeed(iBaseSpeedOfMotion + deltaSpeed);
-    console.log('feedBackSpeedHall::speedB=<',speedB,'>');
+    //console.log('feedBackSpeedHall::speedB=<',speedB,'>');
     const reqStrSpdB = `spd:${speedB}\n`;
     const wBuffSpdB = Buffer.from(reqStrSpdB,'utf-8');
-    console.log('feedBackSpeedHall::reqStrSpdB=<',reqStrSpdB,'>');
+    //console.log('feedBackSpeedHall::reqStrSpdB=<',reqStrSpdB,'>');
     const portB = ZhuZiMotorDevices[bMotor];
     portB.write(wBuffSpdB);    
     
@@ -271,10 +273,12 @@ const onGamePadInput = (data) => {
     if(data[4] === 6) {
       onGamePadEventLeft(data);
     }
+    onGamePadJoysStick(data[0],data[1],data[2],data[3]);
   }
 }
 
 const onGamePadEventForward = (data) => {
+  gControlByAnalog = false;
   //console.log('onGamePadEventForward::data=<',data,'>');
   const portR = ZhuZiMotorDevices['r'];
   const portL = ZhuZiMotorDevices['l'];
@@ -302,6 +306,7 @@ const onGamePadEventForward = (data) => {
 }
 
 const onGamePadEventRigth = (data) => {
+  gControlByAnalog = false;
   //console.log('onGamePadEventRigth::data=<',data,'>');
   const portR = ZhuZiMotorDevices['r'];
   const portL = ZhuZiMotorDevices['l'];
@@ -329,6 +334,7 @@ const onGamePadEventRigth = (data) => {
 }
 
 const onGamePadEventBack = (data) => {
+  gControlByAnalog = false;
   //console.log('onGamePadEventBack::data=<',data,'>');
   const portR = ZhuZiMotorDevices['r'];
   const portL = ZhuZiMotorDevices['l'];
@@ -356,6 +362,7 @@ const onGamePadEventBack = (data) => {
 }
 
 const onGamePadEventLeft = (data) => {
+  gControlByAnalog = false;
   //console.log('onGamePadEventLeft::data=<',data,'>');
   const portR = ZhuZiMotorDevices['r'];
   const portL = ZhuZiMotorDevices['l'];
@@ -380,4 +387,93 @@ const onGamePadEventLeft = (data) => {
   catch(e) {
     console.log('onGamePadEventForward::e=<',e,'>');
   }
+}
+
+const iConstCenterCutter = 64;
+const iConstCenterPos = 128;
+const iConstMaxPos = 255;
+const iConstMinPos = 0;
+let gControlByAnalog = false;
+
+const onGamePadJoysStick = (stick1,stick2,stick3,stick4) => {
+  /*
+  if(Math.abs(stick1-128) > iConstCenterCutter) {
+    console.log('onGamePadJoysStick::stick1=<',stick1,'>');
+  }
+  if(Math.abs(stick2-128) > iConstCenterCutter) {
+    console.log('onGamePadJoysStick::stick2=<',stick2,'>');
+  }
+  if(Math.abs(stick3-128) > iConstCenterCutter) {
+    console.log('onGamePadJoysStick::stick3=<',stick3,'>');
+  }
+  if(Math.abs(stick4-128) > iConstCenterCutter) {
+    console.log('onGamePadJoysStick::stick4=<',stick4,'>');
+  }
+  */
+  
+  if(Math.abs(stick4-iConstCenterPos) > iConstCenterCutter || Math.abs(stick2-iConstCenterPos) > iConstCenterCutter) {
+    //console.log('onGamePadJoysStick::stick1=<',stick1,'>');
+    //console.log('onGamePadJoysStick::stick2=<',stick2,'>');
+    onGamePadAnalogStick(stick2,stick4);
+    gControlByAnalog = true;
+  }
+}
+
+const covertInput2Speed = (input) => {
+  return iConstCenterPos - input;
+}
+
+const onGamePadAnalogStick = (lInput,rRigth) => {
+  console.log('onGamePadAnalogStick::lInput=<',lInput,'>');
+  const speedLeft = covertInput2Speed(lInput);
+  console.log('onGamePadAnalogStick::speedLeft=<',speedLeft,'>');
+  console.log('onGamePadAnalogStick::rRigth=<',rRigth,'>');
+  const speedRigth = covertInput2Speed(rRigth);
+  console.log('onGamePadAnalogStick::speedRigth=<',speedRigth,'>');
+  try {
+    const portR = ZhuZiMotorDevices['r'];
+    const portL = ZhuZiMotorDevices['l'];
+    if(speedLeft > 0) {
+      const reqStrL = 'z\n';
+      const wBuffL = Buffer.from(reqStrL,'utf-8');
+      //console.log('onGamePadAnalogStick::wBuffL=<',wBuffL,'>');
+      portL.write(wBuffL);    
+    } else {
+      const reqStrL = 'f\n';
+      const wBuffL = Buffer.from(reqStrL,'utf-8');
+      //console.log('onGamePadAnalogStick::wBuffL=<',wBuffL,'>');
+      portL.write(wBuffL);        
+    }
+    if(speedRigth > 0) {
+      const reqStrR = 'f\n';
+      const wBuffR = Buffer.from(reqStrR,'utf-8');
+      //console.log('onGamePadAnalogStick::wBuffR=<',wBuffR,'>');
+      portR.write(wBuffR);
+    } else {
+      const reqStrR = 'z\n';
+      const wBuffR = Buffer.from(reqStrR,'utf-8');
+      //console.log('onGamePadAnalogStick::wBuffR=<',wBuffR,'>');
+      portR.write(wBuffR);
+    }
+    const reqStrSpdL = `spd:${Math.abs(speedLeft)}\n`;
+    const wBuffSpdL = Buffer.from(reqStrSpdL,'utf-8');
+    //console.log('onGamePadAnalogStick::wBuffSpdL=<',wBuffSpdL,'>');
+    portL.write(wBuffSpdL);    
+
+    const reqStrSpdR = `spd:${Math.abs(speedRigth)}\n`;
+    const wBuffSpdR = Buffer.from(reqStrSpdR,'utf-8');
+    //console.log('onGamePadAnalogStick::wBuffSpdR=<',wBuffSpdR,'>');
+    portR.write(wBuffSpdR);    
+
+
+    const reqStrGo = 'g\n';
+    const wBuffGo = Buffer.from(reqStrGo,'utf-8');
+    //console.log('onGamePadAnalogStick::wBuffGo=<',wBuffGo,'>');
+    clearHallStepBuffer();
+    portR.write(wBuffGo);    
+    portL.write(wBuffGo);
+  } catch(e) {
+    console.log('onGamePadAnalogStick::e=<',e,'>');
+  }
+
 }
