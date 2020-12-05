@@ -23,11 +23,12 @@ const serailOption = {
 };
 
 const tryOpenZhuZiDevice = (port) => {
-  //console.log('tryOpenZhuZiDevice::port=<',port,'>');
+  console.log('tryOpenZhuZiDevice::port=<',port,'>');
   const zhuzhiport = new SerialPort(port.path,serailOption);
+  console.log('tryOpenZhuZiDevice::zhuzhiport=<',zhuzhiport,'>');
   const parser = new Readline();
   zhuzhiport.pipe(parser);
-  //console.log('tryOpenZhuZiDevice::zhuzhiport=<',zhuzhiport,'>');
+  console.log('tryOpenZhuZiDevice::zhuzhiport=<',zhuzhiport,'>');
   parser.on('data', (data)=>{
     //console.log('tryOpenZhuZiDevice::data=<',data,'>');
     onZhuZiInfoLine(data,zhuzhiport);
@@ -395,25 +396,43 @@ const iConstMaxPos = 255;
 const iConstMinPos = 0;
 let gControlByAnalog = false;
 
+
+let gLoopStick1 = iConstCenterPos;
+let gLoopStick2 = iConstCenterPos;
+let gLoopStick3 = iConstCenterPos;
+let gLoopStick4 = iConstCenterPos;
+let gLoopStickInterval = false;
 const onGamePadJoysStick = (stick1,stick2,stick3,stick4) => {
+  gLoopStick1 = stick1;
+  gLoopStick2 = stick2;
+  gLoopStick3 = stick3;
+  gLoopStick4 = stick4;
+  if(gLoopStickInterval === false) {
+    gLoopStickInterval = setInterval(()=>{
+      onGamePadJoysStickSelfLoop(gLoopStick1,gLoopStick2,gLoopStick3,gLoopStick4);
+    },50);
+  }
+}
+
+const onGamePadJoysStickSelfLoop = (stick1,stick2,stick3,stick4) => {
   /*
   if(Math.abs(stick1-128) > iConstCenterCutter) {
-    console.log('onGamePadJoysStick::stick1=<',stick1,'>');
+    console.log('onGamePadJoysStickSelfLoop::stick1=<',stick1,'>');
   }
   if(Math.abs(stick2-128) > iConstCenterCutter) {
-    console.log('onGamePadJoysStick::stick2=<',stick2,'>');
+    console.log('onGamePadJoysStickSelfLoop::stick2=<',stick2,'>');
   }
   if(Math.abs(stick3-128) > iConstCenterCutter) {
-    console.log('onGamePadJoysStick::stick3=<',stick3,'>');
+    console.log('onGamePadJoysStickSelfLoop::stick3=<',stick3,'>');
   }
   if(Math.abs(stick4-128) > iConstCenterCutter) {
-    console.log('onGamePadJoysStick::stick4=<',stick4,'>');
+    console.log('onGamePadJoysStickSelfLoop::stick4=<',stick4,'>');
   }
   */
   
   if(Math.abs(stick4-iConstCenterPos) > iConstCenterCutter || Math.abs(stick2-iConstCenterPos) > iConstCenterCutter) {
-    //console.log('onGamePadJoysStick::stick1=<',stick1,'>');
-    //console.log('onGamePadJoysStick::stick2=<',stick2,'>');
+    //console.log('onGamePadJoysStickSelfLoop::stick1=<',stick1,'>');
+    //console.log('onGamePadJoysStickSelfLoop::stick2=<',stick2,'>');
     onGamePadAnalogStick(stick2,stick4);
     gControlByAnalog = true;
   }
@@ -455,23 +474,27 @@ const onGamePadAnalogStick = (lInput,rRigth) => {
       //console.log('onGamePadAnalogStick::wBuffR=<',wBuffR,'>');
       portR.write(wBuffR);
     }
-    const reqStrSpdL = `spd:${Math.abs(speedLeft)}\n`;
-    const wBuffSpdL = Buffer.from(reqStrSpdL,'utf-8');
-    //console.log('onGamePadAnalogStick::wBuffSpdL=<',wBuffSpdL,'>');
-    portL.write(wBuffSpdL);    
-
-    const reqStrSpdR = `spd:${Math.abs(speedRigth)}\n`;
-    const wBuffSpdR = Buffer.from(reqStrSpdR,'utf-8');
-    //console.log('onGamePadAnalogStick::wBuffSpdR=<',wBuffSpdR,'>');
-    portR.write(wBuffSpdR);    
-
-
     const reqStrGo = 'g\n';
     const wBuffGo = Buffer.from(reqStrGo,'utf-8');
     //console.log('onGamePadAnalogStick::wBuffGo=<',wBuffGo,'>');
-    clearHallStepBuffer();
-    portR.write(wBuffGo);    
-    portL.write(wBuffGo);
+    
+    if(Math.abs(speedLeft) > iConstCenterCutter) {
+      const reqStrSpdL = `spd:${Math.abs(speedLeft)}\n`;
+      const wBuffSpdL = Buffer.from(reqStrSpdL,'utf-8');
+      //console.log('onGamePadAnalogStick::wBuffSpdL=<',wBuffSpdL,'>');
+      portL.write(wBuffSpdL);
+      portL.write(wBuffGo);
+    }
+
+    if(Math.abs(speedRigth) > iConstCenterCutter) {
+      const reqStrSpdR = `spd:${Math.abs(speedRigth)}\n`;
+      const wBuffSpdR = Buffer.from(reqStrSpdR,'utf-8');
+      //console.log('onGamePadAnalogStick::wBuffSpdR=<',wBuffSpdR,'>');
+      portR.write(wBuffSpdR);    
+      portR.write(wBuffGo);
+    }
+
+
   } catch(e) {
     console.log('onGamePadAnalogStick::e=<',e,'>');
   }
