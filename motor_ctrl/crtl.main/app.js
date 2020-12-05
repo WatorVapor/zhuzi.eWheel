@@ -39,7 +39,7 @@ const ZhuZiMotorDevices = {};
 const ZhuZiMotorIdByPath = {};
 
 const ZhuZiMotorId = 'motorid=<';
-const ZhuZiHallRunStep = 'iHallTurnRunStep=<';
+const ZhuZiHallRunStep = 'iHTS=<';
 
 const onZhuZiInfoLine = (lineCmd,port) => {
   //console.log('onZhuZiInfoLine::lineCmd=<',lineCmd,'>');
@@ -54,7 +54,7 @@ const onZhuZiInfoLine = (lineCmd,port) => {
     const step = getValueOfLineCmd(lineCmd);
     //console.log('onZhuZiInfoLine::step=<',step,'>');
     //console.log('tryOpenZhuZiDevice::port.path=<',port.path,'>');
-    if(gControlByAnalog === false) {
+    if(gControlSpeedByHall) {
       onHallCounterFromBoard(parseInt(step),port.path);
     }
   }
@@ -107,56 +107,17 @@ const clearHallStepBuffer = () => {
 
 const iBaseSpeedOfMotion = 128;
 const iStepSpeedOfMotion = 8;
+const iStepSpeedOfMotionBaseFactor = 2*100;
 
 const trimSpeed = (speed) => {
   if(speed < 32) {
     speed = 32;
   }
-  if(speed > 196) {
-    speed = 196;
+  if(speed > 128) {
+    speed = 128;
   }
   return parseInt(speed);
 }
-
-/*
-const feedBackSpeedHall = ()=> {
-  //console.log('feedBackSpeedHall::HallRunStepOnTimeLine=<',HallRunStepOnTimeLine,'>');
-  //console.log('feedBackSpeedHall::HallRunStepOnTimeLine=<',JSON.stringify(HallRunStepOnTimeLine,undefined,2),'>');
-  let keys = Object.keys(HallRunStepOnTimeLine);
-  if(keys.length < 2) {
-    return;
-  }
-  const aMotor = keys[0];
-  const aMotionSteps = HallRunStepOnTimeLine[aMotor];
-  const bMotor = keys[1];
-  const bMotionSteps = HallRunStepOnTimeLine[bMotor];
-  //console.log('feedBackSpeedHall::aMotionSteps=<',aMotionSteps,'>');
-  //console.log('feedBackSpeedHall::bMotionSteps=<',bMotionSteps,'>');
-  const stepDiff = aMotionSteps.length - bMotionSteps.length;
-  console.log('feedBackSpeedHall::stepDiff=<',stepDiff,'>');
-  if(Math.abs(stepDiff) > 1) {
-    const deltaSpeed = iStepSpeedOfMotion * stepDiff;
-    
-    const speedA = trimSpeed(iBaseSpeedOfMotion - deltaSpeed);
-    const reqStrSpdA = `spd:${speedA}\n`;
-    const wBuffSpdA = Buffer.from(reqStrSpdA,'utf-8');
-    console.log('onGamePadEventForward::reqStrSpdA=<',reqStrSpdA,'>');
-    const portA = ZhuZiMotorDevices[aMotor];
-    portA.write(wBuffSpdA);    
-   
-    const speedB = trimSpeed(iBaseSpeedOfMotion + deltaSpeed);
-    const reqStrSpdB = `spd:${speedB}\n`;
-    const wBuffSpdB = Buffer.from(reqStrSpdB,'utf-8');
-    console.log('onGamePadEventForward::reqStrSpdB=<',reqStrSpdB,'>');
-    const portB = ZhuZiMotorDevices[bMotor];
-    portB.write(wBuffSpdB);    
-    
-  }
-  reportStats(aMotionSteps,bMotionSteps);
-}
-*/
-
-const iStepSpeedOfMotionBaseTime = 1*100;
 
 const feedBackSpeedHall = ()=> {
   //console.log('feedBackSpeedHall::HallRunStepOnTimeLine=<',HallRunStepOnTimeLine,'>');
@@ -193,10 +154,10 @@ const feedBackSpeedHall = ()=> {
   }
   //console.log('feedBackSpeedHall::speedB=<',speedB,'>');
   const speedDiff = speedA - speedB;
-  //console.log('feedBackSpeedHall::speedDiff=<',speedDiff,'>');
+  console.log('feedBackSpeedHall::speedDiff=<',speedDiff,'>');
   if(Math.abs(speedDiff) > 0.0) {
-    const deltaSpeed = iStepSpeedOfMotionBaseTime * speedDiff;
-    
+    const deltaSpeed = iStepSpeedOfMotionBaseFactor * speedDiff;
+    console.log('feedBackSpeedHall::deltaSpeed=<',deltaSpeed,'>');
     const speedA = trimSpeed(iBaseSpeedOfMotion - deltaSpeed);
     //console.log('feedBackSpeedHall::speedA=<',speedA,'>');
     const reqStrSpdA = `spd:${speedA}\n`;
@@ -279,7 +240,7 @@ const onGamePadInput = (data) => {
 }
 
 const onGamePadEventForward = (data) => {
-  gControlByAnalog = false;
+  gControlSpeedByHall = true;
   //console.log('onGamePadEventForward::data=<',data,'>');
   const portR = ZhuZiMotorDevices['r'];
   const portL = ZhuZiMotorDevices['l'];
@@ -307,7 +268,7 @@ const onGamePadEventForward = (data) => {
 }
 
 const onGamePadEventRigth = (data) => {
-  gControlByAnalog = false;
+  gControlSpeedByHall = false;
   //console.log('onGamePadEventRigth::data=<',data,'>');
   const portR = ZhuZiMotorDevices['r'];
   const portL = ZhuZiMotorDevices['l'];
@@ -335,7 +296,7 @@ const onGamePadEventRigth = (data) => {
 }
 
 const onGamePadEventBack = (data) => {
-  gControlByAnalog = false;
+  gControlSpeedByHall = true;
   //console.log('onGamePadEventBack::data=<',data,'>');
   const portR = ZhuZiMotorDevices['r'];
   const portL = ZhuZiMotorDevices['l'];
@@ -363,7 +324,7 @@ const onGamePadEventBack = (data) => {
 }
 
 const onGamePadEventLeft = (data) => {
-  gControlByAnalog = false;
+  gControlSpeedByHall = false;
   //console.log('onGamePadEventLeft::data=<',data,'>');
   const portR = ZhuZiMotorDevices['r'];
   const portL = ZhuZiMotorDevices['l'];
@@ -394,7 +355,7 @@ const iConstCenterCutter = 64;
 const iConstCenterPos = 128;
 const iConstMaxPos = 255;
 const iConstMinPos = 0;
-let gControlByAnalog = false;
+let gControlSpeedByHall = false;
 
 
 let gLoopStick1 = iConstCenterPos;
@@ -434,7 +395,7 @@ const onGamePadJoysStickSelfLoop = (stick1,stick2,stick3,stick4) => {
     //console.log('onGamePadJoysStickSelfLoop::stick1=<',stick1,'>');
     //console.log('onGamePadJoysStickSelfLoop::stick2=<',stick2,'>');
     onGamePadAnalogStick(stick2,stick4);
-    gControlByAnalog = true;
+    gControlSpeedByHall = false;
   }
 }
 

@@ -63,7 +63,7 @@ void setup() {
 static int32_t iMainLoopCounter = 0;
 
 
-static long volatile iHallTurnRunStep = 0;
+static long volatile iHTS = 0;
 static bool iBoolMotorCWFlag = false; //
 
 
@@ -81,9 +81,9 @@ void loop() {
 
 void HallTurnCounterInterrupt(void) {
   iHallTurnCounter++;
-  if(iHallTurnRunStep > 0) {
-    DUMP_VAR(iHallTurnRunStep);
-    iHallTurnRunStep--;
+  if(iHTS > 0) {
+    DUMP_VAR(iHTS);
+    iHTS--;
   } else {
     stopMotor();
   }
@@ -171,7 +171,7 @@ static bool bMotorToBeStarted = false;
 void stopMotor(void) {
   analogWrite(PORT_PWM, 0);
   digitalWrite(PORT_BRAKE,LOW);
-  iHallTurnRunStep = -1;
+  iHTS = -1;
   bMotorToBeStarted = false;
   bMotorRunning = false;
 }
@@ -185,12 +185,14 @@ void startMotor(void) {
 
 static int32_t iTurnTimerOutCounter = 0UL;
 const static int32_t iConstTurnTimeout = 1024UL*2048UL;
+static int32_t iConstTurnHallStepMax = 64UL;
+
 void startMotorReal(void) {
   analogWrite(PORT_PWM, 128);
   digitalWrite(PORT_BRAKE,HIGH);
-  iHallTurnRunStep = 32;
+  iHTS = iConstTurnHallStepMax;
   iTurnTimerOutCounter = iConstTurnTimeout;
-  DUMP_VAR(iHallTurnRunStep);
+  DUMP_VAR(iHTS);
   bMotorToBeStarted = false;
   bMotorRunning = true;
 }
