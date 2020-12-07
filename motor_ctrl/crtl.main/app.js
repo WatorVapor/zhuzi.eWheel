@@ -391,58 +391,67 @@ const onGamePadJoysStickSelfLoop = (stick1,stick2,stick3,stick4) => {
   }
   */
   
+  /*
   if(Math.abs(stick4-iConstCenterPos) > iConstCenterCutter || Math.abs(stick2-iConstCenterPos) > iConstCenterCutter) {
     //console.log('onGamePadJoysStickSelfLoop::stick1=<',stick1,'>');
     //console.log('onGamePadJoysStickSelfLoop::stick2=<',stick2,'>');
-    onGamePadAnalogStick(stick2,stick4);
+    onGamePadAnalogTwoStick(stick2,stick4);
     gControlSpeedByHall = false;
   }
+  */
+  if(Math.abs(stick1-iConstCenterPos) > iConstCenterCutter || Math.abs(stick2-iConstCenterPos) > iConstCenterCutter) {
+    //console.log('onGamePadJoysStickSelfLoop::stick1=<',stick1,'>');
+    //console.log('onGamePadJoysStickSelfLoop::stick2=<',stick2,'>');
+    onGamePadAnalogOneStick(stick1,stick2);
+    gControlSpeedByHall = false;
+  }
+  
 }
 
 const covertInput2Speed = (input) => {
   return iConstCenterPos - input;
 }
 
-const onGamePadAnalogStick = (lInput,rRigth) => {
-  console.log('onGamePadAnalogStick::lInput=<',lInput,'>');
+const onGamePadAnalogTwoStick = (lInput,rRigth) => {
+  console.log('onGamePadAnalogTwoStick::lInput=<',lInput,'>');
   const speedLeft = covertInput2Speed(lInput);
-  console.log('onGamePadAnalogStick::speedLeft=<',speedLeft,'>');
-  console.log('onGamePadAnalogStick::rRigth=<',rRigth,'>');
+  console.log('onGamePadAnalogTwoStick::speedLeft=<',speedLeft,'>');
+  console.log('onGamePadAnalogTwoStick::rRigth=<',rRigth,'>');
   const speedRigth = covertInput2Speed(rRigth);
-  console.log('onGamePadAnalogStick::speedRigth=<',speedRigth,'>');
+  console.log('onGamePadAnalogTwoStick::speedRigth=<',speedRigth,'>');
   try {
     const portR = ZhuZiMotorDevices['r'];
     const portL = ZhuZiMotorDevices['l'];
     if(speedLeft > 0) {
       const reqStrL = 'z\n';
       const wBuffL = Buffer.from(reqStrL,'utf-8');
-      //console.log('onGamePadAnalogStick::wBuffL=<',wBuffL,'>');
+      //console.log('onGamePadAnalogTwoStick::wBuffL=<',wBuffL,'>');
       portL.write(wBuffL);    
     } else {
       const reqStrL = 'f\n';
       const wBuffL = Buffer.from(reqStrL,'utf-8');
-      //console.log('onGamePadAnalogStick::wBuffL=<',wBuffL,'>');
+      //console.log('onGamePadAnalogTwoStick::wBuffL=<',wBuffL,'>');
       portL.write(wBuffL);        
     }
     if(speedRigth > 0) {
       const reqStrR = 'f\n';
       const wBuffR = Buffer.from(reqStrR,'utf-8');
-      //console.log('onGamePadAnalogStick::wBuffR=<',wBuffR,'>');
+      //console.log('onGamePadAnalogTwoStick::wBuffR=<',wBuffR,'>');
       portR.write(wBuffR);
     } else {
       const reqStrR = 'z\n';
       const wBuffR = Buffer.from(reqStrR,'utf-8');
-      //console.log('onGamePadAnalogStick::wBuffR=<',wBuffR,'>');
+      //console.log('onGamePadAnalogTwoStick::wBuffR=<',wBuffR,'>');
       portR.write(wBuffR);
     }
     const reqStrGo = 'g\n';
     const wBuffGo = Buffer.from(reqStrGo,'utf-8');
-    //console.log('onGamePadAnalogStick::wBuffGo=<',wBuffGo,'>');
+    //console.log('onGamePadAnalogTwoStick::wBuffGo=<',wBuffGo,'>');
     
     if(Math.abs(speedLeft) > iConstCenterCutter) {
       const reqStrSpdL = `spd:${Math.abs(speedLeft)}\n`;
       const wBuffSpdL = Buffer.from(reqStrSpdL,'utf-8');
-      //console.log('onGamePadAnalogStick::wBuffSpdL=<',wBuffSpdL,'>');
+      //console.log('onGamePadAnalogTwoStick::wBuffSpdL=<',wBuffSpdL,'>');
       portL.write(wBuffSpdL);
       portL.write(wBuffGo);
     }
@@ -450,14 +459,79 @@ const onGamePadAnalogStick = (lInput,rRigth) => {
     if(Math.abs(speedRigth) > iConstCenterCutter) {
       const reqStrSpdR = `spd:${Math.abs(speedRigth)}\n`;
       const wBuffSpdR = Buffer.from(reqStrSpdR,'utf-8');
-      //console.log('onGamePadAnalogStick::wBuffSpdR=<',wBuffSpdR,'>');
+      //console.log('onGamePadAnalogTwoStick::wBuffSpdR=<',wBuffSpdR,'>');
       portR.write(wBuffSpdR);    
       portR.write(wBuffGo);
     }
-
-
   } catch(e) {
-    console.log('onGamePadAnalogStick::e=<',e,'>');
+    console.log('onGamePadAnalogTwoStick::e=<',e,'>');
   }
+}
 
+const calcSpeedXY = (x,y) => {
+  const xSpeed = iConstCenterPos - x;
+  const ySpeed = iConstCenterPos - y;
+  console.log('calcSpeedLeft::xSpeed=<',xSpeed,'>');
+  console.log('calcSpeedLeft::ySpeed=<',ySpeed,'>');
+  let lWheel = ySpeed;
+  let rWheel = ySpeed;
+  lWheel -= xSpeed;
+  rWheel += xSpeed;
+  return {l:lWheel,r:rWheel};
+}
+
+
+const onGamePadAnalogOneStick = (x,y) => {
+  const speedXY = calcSpeedXY(x,y);
+  console.log('onGamePadAnalogOneStick::speedXY=<',speedXY,'>');
+  const speedLeft = speedXY.l;
+  const speedRigth = speedXY.r;
+  
+  try {
+    const portR = ZhuZiMotorDevices['r'];
+    const portL = ZhuZiMotorDevices['l'];
+    if(speedLeft > 0) {
+      const reqStrL = 'z\n';
+      const wBuffL = Buffer.from(reqStrL,'utf-8');
+      //console.log('onGamePadAnalogOneStick::wBuffL=<',wBuffL,'>');
+      portL.write(wBuffL);    
+    } else {
+      const reqStrL = 'f\n';
+      const wBuffL = Buffer.from(reqStrL,'utf-8');
+      //console.log('onGamePadAnalogOneStick::wBuffL=<',wBuffL,'>');
+      portL.write(wBuffL);        
+    }
+    if(speedRigth > 0) {
+      const reqStrR = 'f\n';
+      const wBuffR = Buffer.from(reqStrR,'utf-8');
+      //console.log('onGamePadAnalogOneStick::wBuffR=<',wBuffR,'>');
+      portR.write(wBuffR);
+    } else {
+      const reqStrR = 'z\n';
+      const wBuffR = Buffer.from(reqStrR,'utf-8');
+      //console.log('onGamePadAnalogOneStick::wBuffR=<',wBuffR,'>');
+      portR.write(wBuffR);
+    }
+    const reqStrGo = 'g\n';
+    const wBuffGo = Buffer.from(reqStrGo,'utf-8');
+    //console.log('onGamePadAnalogOneStick::wBuffGo=<',wBuffGo,'>');
+    
+    if(Math.abs(speedLeft) > iConstCenterCutter) {
+      const reqStrSpdL = `spd:${Math.abs(speedLeft)}\n`;
+      const wBuffSpdL = Buffer.from(reqStrSpdL,'utf-8');
+      //console.log('onGamePadAnalogOneStick::wBuffSpdL=<',wBuffSpdL,'>');
+      portL.write(wBuffSpdL);
+      portL.write(wBuffGo);
+    }
+
+    if(Math.abs(speedRigth) > iConstCenterCutter) {
+      const reqStrSpdR = `spd:${Math.abs(speedRigth)}\n`;
+      const wBuffSpdR = Buffer.from(reqStrSpdR,'utf-8');
+      //console.log('onGamePadAnalogOneStick::wBuffSpdR=<',wBuffSpdR,'>');
+      portR.write(wBuffSpdR);    
+      portR.write(wBuffGo);
+    }
+  } catch(e) {
+    console.log('onGamePadAnalogOneStick::e=<',e,'>');
+  }
 }
