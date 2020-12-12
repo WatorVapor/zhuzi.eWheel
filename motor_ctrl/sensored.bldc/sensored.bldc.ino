@@ -27,7 +27,7 @@
   }
 
 
-static long iHallTurnCounter = 0;
+static long iHTC = 0;
 static uint32_t iMotorStartDelay = 0;
 static uint32_t iMotorStartWait = 0;
 
@@ -80,13 +80,14 @@ void loop() {
 }
 
 void HallTurnCounterInterrupt(void) {
-  iHallTurnCounter++;
+  iHTC++;
   if(iHTS > 0) {
     DUMP_VAR(iHTS);
     iHTS--;
   } else {
     stopMotor();
   }
+  DUMP_VAR(iHTC);
 }
 
 

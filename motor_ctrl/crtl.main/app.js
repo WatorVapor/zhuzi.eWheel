@@ -40,6 +40,7 @@ const ZhuZiMotorIdByPath = {};
 
 const ZhuZiMotorId = 'motorid=<';
 const ZhuZiHallRunStep = 'iHTS=<';
+const ZhuZiHallCounter = 'iHTC=<';
 
 const onZhuZiInfoLine = (lineCmd,port) => {
   //console.log('onZhuZiInfoLine::lineCmd=<',lineCmd,'>');
@@ -57,6 +58,11 @@ const onZhuZiInfoLine = (lineCmd,port) => {
     if(gControlSpeedByHall) {
       onHallCounterFromBoard(parseInt(step),port.path);
     }
+  }
+  if(lineCmd.indexOf(ZhuZiHallCounter) >= 0) {
+    const counter = getValueOfLineCmd(lineCmd);
+    console.log('onZhuZiInfoLine::counter=<',counter,'>');
+    console.log('tryOpenZhuZiDevice::port.path=<',port.path,'>');
   }
 }
 const getValueOfLineCmd =(lineCmd) => {
