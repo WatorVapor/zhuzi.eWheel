@@ -61,8 +61,8 @@ const onZhuZiInfoLine = (lineCmd,port) => {
   }
   if(lineCmd.indexOf(ZhuZiHallCounter) >= 0) {
     const counter = getValueOfLineCmd(lineCmd);
-    console.log('onZhuZiInfoLine::counter=<',counter,'>');
-    console.log('tryOpenZhuZiDevice::port.path=<',port.path,'>');
+    //console.log('onZhuZiInfoLine::counter=<',counter,'>');
+    //console.log('tryOpenZhuZiDevice::port.path=<',port.path,'>');
   }
 }
 const getValueOfLineCmd =(lineCmd) => {
@@ -99,7 +99,7 @@ const onHallCounterFromBoard = (step,port) => {
     console.log('onHallCounterFromBoard::HallRunStepOnTimeLine=<',JSON.stringify(HallRunStepOnTimeLine,undefined,2),'>');
   }
   */
-  if(step > 8) {
+  if(step > 16) {
     feedBackSpeedHall();
   }
 }
@@ -111,13 +111,12 @@ const clearHallStepBuffer = () => {
   }
 }
 
-const iBaseSpeedOfMotion = 128;
-const iStepSpeedOfMotion = 8;
-const iStepSpeedOfMotionBaseFactor = 2*100;
+const iBaseSpeedOfMotion = 64;
+const iStepSpeedOfMotionBaseFactor = 1*100;
 
 const trimSpeed = (speed) => {
-  if(speed < 32) {
-    speed = 32;
+  if(speed < 16) {
+    speed = 16;
   }
   if(speed > 128) {
     speed = 128;
@@ -139,20 +138,23 @@ const feedBackSpeedHall = ()=> {
   //console.log('feedBackSpeedHall::aMotionSteps=<',aMotionSteps,'>');
   //console.log('feedBackSpeedHall::bMotionSteps=<',bMotionSteps,'>');
   let speedA = 0.0;
+  let aMotorStartAt = false;
+  let aMotorCurAt = false;
   if(aMotionSteps.length > 2) {
-    const aMotorStartAt = aMotionSteps[1];
-    const aMotorCurAt = aMotionSteps[aMotionSteps.length-1];
+    aMotorStartAt = aMotionSteps[1];
+    aMotorCurAt = aMotionSteps[aMotionSteps.length-1];
     //console.log('feedBackSpeedHall::aMotorStartAt=<',aMotorStartAt,'>');
     //console.log('feedBackSpeedHall::aMotorCurAt=<',aMotorCurAt,'>');
     const escape_ms = aMotorCurAt.ts  - aMotorStartAt.ts;
     speedA = (aMotorStartAt.step - aMotorCurAt.step) / escape_ms;
   }
   //console.log('feedBackSpeedHall::speedA=<',speedA,'>');
-
   let speedB = 0.0;
+  let bMotorStartAt = false;
+  let bMotorCurAt = false;
   if(bMotionSteps.length > 2) {
-    const bMotorStartAt = bMotionSteps[1];
-    const bMotorCurAt = bMotionSteps[bMotionSteps.length-1];
+    bMotorStartAt = bMotionSteps[1];
+    bMotorCurAt = bMotionSteps[bMotionSteps.length-1];
     //console.log('feedBackSpeedHall::bMotorStartAt=<',bMotorStartAt,'>');
     //console.log('feedBackSpeedHall::bMotorCurAt=<',bMotorCurAt,'>');
     const escape_ms = bMotorCurAt.ts  - bMotorStartAt.ts;
@@ -164,20 +166,30 @@ const feedBackSpeedHall = ()=> {
   if(Math.abs(speedDiff) > 0.0) {
     const deltaSpeed = iStepSpeedOfMotionBaseFactor * speedDiff;
     console.log('feedBackSpeedHall::deltaSpeed=<',deltaSpeed,'>');
-    const speedA = trimSpeed(iBaseSpeedOfMotion - deltaSpeed);
-    //console.log('feedBackSpeedHall::speedA=<',speedA,'>');
+    let speedAFactor = iBaseSpeedOfMotion - deltaSpeed; 
+    if(aMotorStartAt && aMotorCurAt) {
+      speedAFactor = aMotorCurAt.step * speedAFactor/aMotorStartAt.step;
+    }
+    console.log('feedBackSpeedHall::speedAFactor=<',speedAFactor,'>');
+    const speedA = trimSpeed(speedAFactor);
+    console.log('feedBackSpeedHall::speedA=<',speedA,'>');
     const reqStrSpdA = `spd:${speedA}\n`;
     const wBuffSpdA = Buffer.from(reqStrSpdA,'utf-8');
     //console.log('feedBackSpeedHall::reqStrSpdA=<',reqStrSpdA,'>');
     const portA = ZhuZiMotorDevices[aMotor];
-    portA.write(wBuffSpdA);    
    
-    const speedB = trimSpeed(iBaseSpeedOfMotion + deltaSpeed);
-    //console.log('feedBackSpeedHall::speedB=<',speedB,'>');
+    let speedBFactor = iBaseSpeedOfMotion + deltaSpeed;
+    if(bMotorCurAt && bMotorStartAt) {
+      speedBFactor = bMotorCurAt.step * speedBFactor / bMotorStartAt.step;
+    }
+    console.log('feedBackSpeedHall::speedBFactor=<',speedBFactor,'>');    
+    const speedB = trimSpeed(speedBFactor);
+    console.log('feedBackSpeedHall::speedB=<',speedB,'>');
     const reqStrSpdB = `spd:${speedB}\n`;
     const wBuffSpdB = Buffer.from(reqStrSpdB,'utf-8');
     //console.log('feedBackSpeedHall::reqStrSpdB=<',reqStrSpdB,'>');
     const portB = ZhuZiMotorDevices[bMotor];
+    portA.write(wBuffSpdA);    
     portB.write(wBuffSpdB);    
     
   }
@@ -204,6 +216,8 @@ const reportStats = (aMotionSteps,bMotionSteps) => {
 const HID = require('node-hid');
 const hidDevices = HID.devices();
 //console.log('::hidDevices=<',hidDevices,'>');
+let gDataRepeartInterval = false;
+let gInputData = false;
 
 const openHidDevice = (info) => {
   console.log('openHidDevice::info=<',info,'>');
@@ -211,7 +225,12 @@ const openHidDevice = (info) => {
   console.log('openHidDevice::device=<',device,'>');
   device.on('data', (data) => {
     //console.log('openHidDevice::data=<',data,'>');
-    onGamePadInput(data);
+    gInputData = data;
+    if(gDataRepeartInterval === false) {
+      gDataRepeartInterval = setInterval(()=>{
+        onGamePadInput(gInputData);
+      },50);
+    }
   });
   device.on('error', (error) => {
     console.log('openHidDevice::error=<',error,'>');
@@ -368,17 +387,12 @@ let gLoopStick1 = iConstCenterPos;
 let gLoopStick2 = iConstCenterPos;
 let gLoopStick3 = iConstCenterPos;
 let gLoopStick4 = iConstCenterPos;
-let gLoopStickInterval = false;
 const onGamePadJoysStick = (stick1,stick2,stick3,stick4) => {
   gLoopStick1 = stick1;
   gLoopStick2 = stick2;
   gLoopStick3 = stick3;
   gLoopStick4 = stick4;
-  if(gLoopStickInterval === false) {
-    gLoopStickInterval = setInterval(()=>{
-      onGamePadJoysStickSelfLoop(gLoopStick1,gLoopStick2,gLoopStick3,gLoopStick4);
-    },50);
-  }
+  onGamePadJoysStickSelfLoop(gLoopStick1,gLoopStick2,gLoopStick3,gLoopStick4);
 }
 
 const onGamePadJoysStickSelfLoop = (stick1,stick2,stick3,stick4) => {
