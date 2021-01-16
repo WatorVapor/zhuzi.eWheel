@@ -270,12 +270,12 @@ const onGamePadEventForward = (data) => {
   const portR = ZhuZiMotorDevices['r'];
   const portL = ZhuZiMotorDevices['l'];
   try {
-    const reqStrR = 'f\n';
+    const reqStrR = 'z\n';
     const wBuffR = Buffer.from(reqStrR,'utf-8');
     //console.log('onGamePadEventForward::wBuffR=<',wBuffR,'>');
     portR.write(wBuffR);
     
-    const reqStrL = 'z\n';
+    const reqStrL = 'f\n';
     const wBuffL = Buffer.from(reqStrL,'utf-8');
     //console.log('onGamePadEventForward::wBuffL=<',wBuffL,'>');
     portL.write(wBuffL);
@@ -298,12 +298,12 @@ const onGamePadEventRigth = (data) => {
   const portR = ZhuZiMotorDevices['r'];
   const portL = ZhuZiMotorDevices['l'];
   try {
-    const reqStrR = 'z\n';
+    const reqStrR = 'f\n';
     const wBuffR = Buffer.from(reqStrR,'utf-8');
     //console.log('onGamePadEventForward::wBuffR=<',wBuffR,'>');
     portR.write(wBuffR);
     
-    const reqStrL = 'z\n';
+    const reqStrL = 'f\n';
     const wBuffL = Buffer.from(reqStrL,'utf-8');
     //console.log('onGamePadEventForward::wBuffL=<',wBuffL,'>');
     portL.write(wBuffL);
@@ -326,12 +326,12 @@ const onGamePadEventBack = (data) => {
   const portR = ZhuZiMotorDevices['r'];
   const portL = ZhuZiMotorDevices['l'];
   try {
-    const reqStrR = 'z\n';
+    const reqStrR = 'f\n';
     const wBuffR = Buffer.from(reqStrR,'utf-8');
     //console.log('onGamePadEventForward::wBuffR=<',wBuffR,'>');
     portR.write(wBuffR);
     
-    const reqStrL = 'f\n';
+    const reqStrL = 'z\n';
     const wBuffL = Buffer.from(reqStrL,'utf-8');
     //console.log('onGamePadEventForward::wBuffL=<',wBuffL,'>');
     portL.write(wBuffL);
@@ -354,12 +354,12 @@ const onGamePadEventLeft = (data) => {
   const portR = ZhuZiMotorDevices['r'];
   const portL = ZhuZiMotorDevices['l'];
   try {
-    const reqStrR = 'f\n';
+    const reqStrR = 'z\n';
     const wBuffR = Buffer.from(reqStrR,'utf-8');
     //console.log('onGamePadEventForward::wBuffR=<',wBuffR,'>');
     portR.write(wBuffR);
     
-    const reqStrL = 'f\n';
+    const reqStrL = 'z\n';
     const wBuffL = Buffer.from(reqStrL,'utf-8');
     //console.log('onGamePadEventForward::wBuffL=<',wBuffL,'>');
     portL.write(wBuffL);
@@ -443,23 +443,23 @@ const onGamePadAnalogTwoStick = (lInput,rRigth) => {
     const portR = ZhuZiMotorDevices['r'];
     const portL = ZhuZiMotorDevices['l'];
     if(speedLeft > 0) {
-      const reqStrL = 'z\n';
+      const reqStrL = 'f\n';
       const wBuffL = Buffer.from(reqStrL,'utf-8');
       //console.log('onGamePadAnalogTwoStick::wBuffL=<',wBuffL,'>');
       portL.write(wBuffL);    
     } else {
-      const reqStrL = 'f\n';
+      const reqStrL = 'z\n';
       const wBuffL = Buffer.from(reqStrL,'utf-8');
       //console.log('onGamePadAnalogTwoStick::wBuffL=<',wBuffL,'>');
       portL.write(wBuffL);        
     }
     if(speedRigth > 0) {
-      const reqStrR = 'f\n';
+      const reqStrR = 'z\n';
       const wBuffR = Buffer.from(reqStrR,'utf-8');
       //console.log('onGamePadAnalogTwoStick::wBuffR=<',wBuffR,'>');
       portR.write(wBuffR);
     } else {
-      const reqStrR = 'z\n';
+      const reqStrR = 'f\n';
       const wBuffR = Buffer.from(reqStrR,'utf-8');
       //console.log('onGamePadAnalogTwoStick::wBuffR=<',wBuffR,'>');
       portR.write(wBuffR);
@@ -511,23 +511,23 @@ const onGamePadAnalogOneStick = (x,y) => {
     const portR = ZhuZiMotorDevices['r'];
     const portL = ZhuZiMotorDevices['l'];
     if(speedLeft > 0) {
-      const reqStrL = 'z\n';
+      const reqStrL = 'f\n';
       const wBuffL = Buffer.from(reqStrL,'utf-8');
       //console.log('onGamePadAnalogOneStick::wBuffL=<',wBuffL,'>');
       portL.write(wBuffL);    
     } else {
-      const reqStrL = 'f\n';
+      const reqStrL = 'z\n';
       const wBuffL = Buffer.from(reqStrL,'utf-8');
       //console.log('onGamePadAnalogOneStick::wBuffL=<',wBuffL,'>');
       portL.write(wBuffL);        
     }
     if(speedRigth > 0) {
-      const reqStrR = 'f\n';
+      const reqStrR = 'z\n';
       const wBuffR = Buffer.from(reqStrR,'utf-8');
       //console.log('onGamePadAnalogOneStick::wBuffR=<',wBuffR,'>');
       portR.write(wBuffR);
     } else {
-      const reqStrR = 'z\n';
+      const reqStrR = 'f\n';
       const wBuffR = Buffer.from(reqStrR,'utf-8');
       //console.log('onGamePadAnalogOneStick::wBuffR=<',wBuffR,'>');
       portR.write(wBuffR);
