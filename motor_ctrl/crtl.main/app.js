@@ -124,6 +124,10 @@ const trimSpeed = (speed) => {
   return parseInt(speed);
 }
 
+const fConstPofPid = 1.0;
+const fConstIofPid = 1.0;
+const fConstDofPid = 1.0;
+
 const feedBackSpeedHall = ()=> {
   //console.log('feedBackSpeedHall::HallRunStepOnTimeLine=<',HallRunStepOnTimeLine,'>');
   //console.log('feedBackSpeedHall::HallRunStepOnTimeLine=<',JSON.stringify(HallRunStepOnTimeLine,undefined,2),'>');
@@ -161,7 +165,7 @@ const feedBackSpeedHall = ()=> {
     speedSumB = (bMotorStartAt.step - bMotorCurAt.step) / escape_ms;
   }
   //console.log('feedBackSpeedHall::speedSumB=<',speedSumB,'>');
-  const speedDiff = speedSumA - speedSumB;
+  const speedDiff = fConstIofPid * (speedSumA - speedSumB);
   console.log('feedBackSpeedHall::speedDiff=<',speedDiff,'>');
   if(Math.abs(speedDiff) > 0.0) {
     const deltaSpeed = iStepSpeedOfMotionBaseFactor * speedDiff;
