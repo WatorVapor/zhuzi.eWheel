@@ -87,7 +87,7 @@ const onOneFrameLidarData = (oneFrame) => {
     //console.log('onOneFrameLidarData::anglef=<',anglef,'>');
     const x = distanceM * Math.cos(anglef);
     const y = distanceM * Math.sin(anglef);
-    if(quality > 128 && Math.abs(distanceM) < 8000.0) {
+    if(quality > 2 && Math.abs(distanceM) < 8000.0 && Math.abs(distanceM) > 0.1) {
       cloudPoints.push({x:x,y:y});
     }
   }
