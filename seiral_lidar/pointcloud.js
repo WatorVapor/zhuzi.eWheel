@@ -26,7 +26,7 @@ class PointCloud4Lidar {
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(width, height);
     this.scene_ = new THREE.Scene();
-    const axes = new THREE.AxesHelper(100);
+    const axes = new THREE.AxesHelper(50);
     this.scene_.add(axes);  
     const camera = new THREE.PerspectiveCamera(
       45,
@@ -34,14 +34,14 @@ class PointCloud4Lidar {
       1,
       200
     );
-    camera.position.set(100, 100, 100);
+    camera.position.set(50, 50, 50);
     const controls = new THREE.OrbitControls(camera, renderer.domElement);      
-    const light = new THREE.DirectionalLight(0x8F8F8F);
+    const light = new THREE.AmbientLight(0xffffff );
     light.intensity = 2; 
-    light.position.set(-100, -100, -100);
+    light.position.set(-50, -50, -50);
     this.scene_.add(light);
     
-    this.pointGeometry_ = new THREE.SphereGeometry( 0.1, 32, 32 );
+    this.pointGeometry_ = new THREE.SphereGeometry( 0.05, 32, 32 );
     this.pointMaterial_ = new THREE.MeshBasicMaterial( {color: 0xffff} );
 
     const tick = () => {
