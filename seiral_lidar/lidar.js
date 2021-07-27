@@ -71,15 +71,25 @@ const onOneFrameLidarData = (oneFrame) => {
   }
   //console.log('onOneFrameLidarData::angle_per_sample=<',angle_per_sample,'>');
   const dataOffset = 8;
+  const cloudPoints = [];
   for(let index = 0; index < data_length;index++) {
     const data0 = frameData[dataOffset + index*3 + 0];
+    const quality = data0;
+    //console.log('onOneFrameLidarData::quality=<',quality,'>');
     const data1 = frameData[dataOffset + index*3 + 1];
     const data2 = frameData[dataOffset + index*3 + 2];
     const distanceMM = data2  << 8 + data1;
-    const distance = parseFloat(distanceMM)/1000;
+    //console.log('onOneFrameLidarData::distanceMM=<',distanceMM,'>');
+    const distanceM = parseFloat(distanceMM)/1000;
+    //console.log('onOneFrameLidarData::distanceM=<',distanceM,'>');
     const angle = (start_angle + angle_per_sample * index);
     const anglef = kStepAngle * (angle / 0xB400) ;
-    console.log('onOneFrameLidarData::anglef=<',anglef,'>');
-    console.log('onOneFrameLidarData::distance=<',distance,'>');
+    //console.log('onOneFrameLidarData::anglef=<',anglef,'>');
+    const x = distanceM * Math.cos(anglef);
+    const y = distanceM * Math.sin(anglef);
+    if(quality > 128 && Math.abs(distanceM) < 8000.0) {
+      cloudPoints.push({x:x,y:y});
+    }
   }
+  gAppPointCloud.onPointData(cloudPoints);
 }
