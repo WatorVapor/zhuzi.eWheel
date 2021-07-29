@@ -87,13 +87,13 @@ const onOneFrameLidarData = (oneFrame) => {
     const quality = data0;
     //console.log('onOneFrameLidarData::quality=<',quality,'>');
     const data1 = frameData[dataOffset + index*3 + 1];
-    console.log('onOneFrameLidarData::data1=<',data1,'>');
+    //console.log('onOneFrameLidarData::data1=<',data1,'>');
     const data2 = frameData[dataOffset + index*3 + 2];
-    console.log('onOneFrameLidarData::data2=<',data2,'>');
+    //console.log('onOneFrameLidarData::data2=<',data2,'>');
     const distance = (data2  << 8) + data1;
     //console.log('onOneFrameLidarData::distance=<',distance,'>');
     const distanceM = parseFloat(distance)/kDistanceToM;
-    console.log('onOneFrameLidarData::distanceM=<',distanceM,'>');
+    //console.log('onOneFrameLidarData::distanceM=<',distanceM,'>');
     const angle = (start_angle + angle_per_sample * index);
     //console.log('onOneFrameLidarData::angle=<',angle,'>');
     const anglef = (kStepAngle * angle) / kOneRoundAngle ;

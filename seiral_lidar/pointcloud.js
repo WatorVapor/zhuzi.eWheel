@@ -45,7 +45,7 @@ class PointCloud4Lidar {
     light.position.set(-10, -10, -10);
     this.scene_.add(light);
 
-    this.CenterGeometry_ = new THREE.SphereGeometry( 0.1, 256, 256 );
+    this.CenterGeometry_ = new THREE.SphereGeometry( 0.05, 256, 256 );
     this.CenterMaterial_ = new THREE.MeshBasicMaterial( {color: 0xff0000} );
     const sphere  = new THREE.Mesh( this.CenterGeometry_, this.CenterMaterial_ );
     this.scene_.add(sphere);
@@ -71,4 +71,10 @@ class PointCloud4Lidar {
       this.scene_.add(cube);
     }
   }
+}
+
+const onClickClearCloudPoint = (elme) => {
+  console.log('onClickClearCloudPoint::elme=<',elme,'>');
+  //console.log('onClickClearCloudPoint::gAppPointCloud.scene_=<',gAppPointCloud.scene_,'>');
+  gAppPointCloud = new PointCloud4Lidar('canvas-lidar-point-cloud');
 }
