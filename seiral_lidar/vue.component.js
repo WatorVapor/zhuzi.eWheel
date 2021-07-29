@@ -1,7 +1,7 @@
 const btn_open_serial_template = `
     <div class="row justify-content-center">
       <div class="col-3 d-flex justify-content-start">
-        <input type="button" class="btn btn-success" onclick="onClickOpenDevice(this)" value="シリアルデバイス選択"></input>
+        <input type="button" class="btn btn-success" onclick="onClickOpenDevice(this)" value="Open Device of Lidar(UART)"></input>
       </div>
     </div>
 `;
