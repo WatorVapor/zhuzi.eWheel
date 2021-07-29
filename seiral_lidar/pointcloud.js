@@ -26,22 +26,31 @@ class PointCloud4Lidar {
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(width, height);
     this.scene_ = new THREE.Scene();
-    const axes = new THREE.AxesHelper(50);
-    this.scene_.add(axes);  
-    const camera = new THREE.PerspectiveCamera(
-      45,
-      width / height,
-      1,
-      200
-    );
-    camera.position.set(50, 50, 50);
+    const axes = new THREE.AxesHelper(10);
+    this.scene_.add(axes);
+
+    const gridHelper_detail = new THREE.GridHelper( 10, 100 ,0x111111,0x222222);
+    this.scene_.add( gridHelper_detail ); 
+
+    const gridHelper = new THREE.GridHelper( 10, 10 );
+    this.scene_.add( gridHelper ); 
+
+    const camera = new THREE.PerspectiveCamera(45,width / height,0.001,1000);
+    //const camera = new THREE.OrthographicCamera(width / - 2, width / 2, height / 2, height / - 2,1,100);
+    camera.position.set(10, 10, 10);
+    
     const controls = new THREE.OrbitControls(camera, renderer.domElement);      
     const light = new THREE.AmbientLight(0xffffff );
-    light.intensity = 2; 
-    light.position.set(-50, -50, -50);
+    light.intensity = 10; 
+    light.position.set(-10, -10, -10);
     this.scene_.add(light);
+
+    this.CenterGeometry_ = new THREE.SphereGeometry( 0.1, 256, 256 );
+    this.CenterMaterial_ = new THREE.MeshBasicMaterial( {color: 0xff0000} );
+    const sphere  = new THREE.Mesh( this.CenterGeometry_, this.CenterMaterial_ );
+    this.scene_.add(sphere);
     
-    this.pointGeometry_ = new THREE.SphereGeometry( 0.05, 32, 32 );
+    this.pointGeometry_ = new THREE.BoxGeometry( 0.02, 0.02, 0.02 );
     this.pointMaterial_ = new THREE.MeshBasicMaterial( {color: 0xffff} );
 
     const tick = () => {
@@ -55,11 +64,11 @@ class PointCloud4Lidar {
     //console.log('onPointData::points=<',points,'>');
     for(const point of points) {
       //console.log('onPointData::point=<',point,'>');
-      const sphere = new THREE.Mesh( this.pointGeometry_, this.pointMaterial_ );
-      //console.log('onPointData::sphere=<',sphere,'>');
-      sphere.position.x = point.x;
-      sphere.position.z = point.y;
-      this.scene_.add(sphere);
+      const cube = new THREE.Mesh( this.pointGeometry_, this.pointMaterial_ );
+      //console.log('onPointData::cube=<',cube,'>');
+      cube.position.x = point.x;
+      cube.position.z = point.y;
+      this.scene_.add(cube);
     }
   }
 }
