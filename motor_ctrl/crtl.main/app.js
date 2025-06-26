@@ -219,7 +219,20 @@ const reportStats = (aMotionSteps,bMotionSteps) => {
 
 const HID = require('node-hid');
 const hidDevices = HID.devices();
-//console.log('::hidDevices=<',hidDevices,'>');
+
+const USBDetect = require('usb-detection');
+USBDetect.startMonitoring();
+
+USBDetect.on('add', function(device) {
+	console.log(device);
+  console.log('USBDetect::add::device=<',device,'>');
+  const hidDevices = HID.devices();
+  console.log('::hidDevices=<',hidDevices,'>');
+  openHidDeviceVP(device.vendorId,device.productId);
+});
+
+
+console.log('::hidDevices=<',hidDevices,'>');
 let gDataRepeartInterval = false;
 let gInputData = false;
 
@@ -241,27 +254,50 @@ const openHidDevice = (info) => {
   });
 };
 
+const openHidDeviceVP = (vendorId,productId) => {
+  console.log('openHidDeviceVP::vendorId=<',vendorId,'>');
+  const device = new HID.HID(vendorId,productId);
+  console.log('openHidDeviceVP::device=<',device,'>');
+  device.on('data', (data) => {
+    //console.log('openHidDeviceVP::data=<',data,'>');
+    gInputData = data;
+    if(gDataRepeartInterval === false) {
+      gDataRepeartInterval = setInterval(()=>{
+        onGamePadInput(gInputData);
+      },50);
+    }
+  });
+  device.on('error', (error) => {
+    console.log('openHidDeviceVP::error=<',error,'>');
+  });
+};
+
+
+
 for(const hidDevice of hidDevices) {
   //console.log('::hidDevice=<',hidDevice,'>');
   if(hidDevice.product === 'Logicool Dual Action') {
+    openHidDevice(hidDevice);
+  }
+  if(hidDevice.product === 'Controller (Gamepad F310)') {
     openHidDevice(hidDevice);
   }
 }
 
 const onGamePadInput = (data) => {
   //console.log('onGamePadInput::data=<',data,'>');
-  if (data.length > 4) {
-    //console.log('onGamePadInput::data[4]=<',data[4],'>');
-    if(data[4] === 0) {
+  if (data.length > 12) {
+    //console.log('onGamePadInput::data[11]=<',data[11],'>');
+    if(data[11] === 4) {
       onGamePadEventForward(data);
     }
-    if(data[4] === 2) {
+    if(data[11] === 28) {
       onGamePadEventRigth(data);
     }
-    if(data[4] === 4) {
+    if(data[11] === 20) {
       onGamePadEventBack(data);
     }
-    if(data[4] === 6) {
+    if(data[11] === 12) {
       onGamePadEventLeft(data);
     }
     onGamePadJoysStick(data[0],data[1],data[2],data[3]);
@@ -270,7 +306,7 @@ const onGamePadInput = (data) => {
 
 const onGamePadEventForward = (data) => {
   gControlSpeedByHall = true;
-  //console.log('onGamePadEventForward::data=<',data,'>');
+  console.log('onGamePadEventForward::data=<',data,'>');
   const portR = ZhuZiMotorDevices['r'];
   const portL = ZhuZiMotorDevices['l'];
   try {
